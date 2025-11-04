@@ -25,7 +25,6 @@ server.listen(PORT, () => {
 console.log("🔎 Variabili lette:");
 console.log("DISCORD_TOKEN:", process.env.DISCORD_TOKEN ? "✔️ trovata" : "❌ mancante");
 console.log("CLIENT_ID:", process.env.CLIENT_ID ? "✔️ trovata" : "❌ mancante");
-console.log("GUILD_ID:", process.env.GUILD_ID ? "✔️ trovata" : "❌ mancante");
 console.log("MONGO_URI:", process.env.MONGO_URI ? "✔️ trovata" : "❌ mancante");
 
 if (!process.env.MONGO_URI) {
@@ -272,10 +271,10 @@ const commands = [
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 try {
   console.log("🔄 Aggiornamento comandi slash (guild)...");
-  await rest.put(
-    Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-    { body: commands }
-  );
+await rest.put(
+  Routes.applicationCommands(process.env.CLIENT_ID),
+  { body: commands }
+);
   console.log("✅ Comandi slash registrati nella guild");
 } catch (err) {
   console.error("❌ Errore registrazione comandi:", err);
