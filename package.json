@@ -1,0 +1,16 @@
+{
+  "name": "discord-economy-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord con economia e MongoDB",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "mongoose": "^8.8.2",
+    "dotenv": "^16.4.5"
+  }
+}
+
