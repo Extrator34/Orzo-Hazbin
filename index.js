@@ -47,17 +47,10 @@ const characterSchema = new mongoose.Schema({
   name: String,
   image: { type: String },
   money: { type: Number, default: 500 },
-  karma: { type: Number, default: 0 },
-  hpMax: { type: Number, default: 500 },
-  hpPerLevel: { type: Number, default: 10 },
   level: { type: Number, default: 1 },
   expTotale: { type: Number, default: 0 },
   expMostrata: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
- inventory: {
-  type: [{ nome: String, quantita: Number }],
-  default: []
-},
   vantaggi: { type: [{ nome: String, modificatore: Number }], default: [] }
 });
 const Character = mongoose.model("Character", characterSchema);
@@ -871,18 +864,12 @@ if (interaction.commandName === "help") {
     "`/changeimage` – modifica l'immagine di un tuo personaggio",
     "`/deletepg` – Elimina uno dei tuoi personaggi",
     "`/pay` – Paga un altro personaggio",
-    "`/give` – Dai un oggetto a un altro personaggio"
   ];
 
   const adminCommands = [
     "`/modifymoney` – Aggiungi o rimuovi soldi",
     "`/addexp` – Aggiungi exp",
     "`/removeexp` – Rimuovi exp",
-    "`/sethpmax` – Modifica HP massimi",
-    "`/sethpperlevel` – Modifica HP per livello",
-    "`/addkarma` – Modifica karma",
-    "`/addinventory` – Aggiungi oggetto",
-    "`/removeinventory` – Rimuovi oggetto",
     "`/advantage` – Aggiungi vantaggio",
     "`/removeadvantage` – Rimuovi vantaggio"
   ];
