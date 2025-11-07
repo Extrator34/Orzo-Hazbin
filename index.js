@@ -126,24 +126,6 @@ const commands = [
     ],
   },
   {
-    name: "addexp",
-    description: "(ADMIN ONLY) Aggiungi punti esperienza a un personaggio",
-    options: [
-      { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
-      { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
-      { name: "amount", type: 4, description: "Quantità di exp da aggiungere", required: true },
-    ],
-  },
-  {
-    name: "removeexp",
-    description: "(ADMIN ONLY) Rimuovi exp a un personaggio",
-    options: [
-      { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
-      { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
-      { name: "amount", type: 4, description: "Quantità di exp da rimuovere", required: true },
-    ],
-  },
-  {
     name: "deletepg",
     description: "Elimina uno dei tuoi personaggi",
     options: [
@@ -186,7 +168,7 @@ const commands = [
   description: "Claim giornaliero: ottieni 100💰 per ogni tuo personaggio"
 },
   {
-  name: "infamylevelup",
+  name: "levelup",
   description: "Spendi 1000 punti infamia per far salire di livello un tuo personaggio",
   options: [
     {
@@ -369,14 +351,11 @@ if (interaction.commandName === "create") {
     .map((c) => {
       const entry = [...expTable].reverse().find(([expReq]) => c.expTotale >= expReq);
       const livello = entry ? entry[1] : 1;
-      const expBase = entry ? entry[0] : 0;
-      const nextExp = expTable.find(([_, lvl]) => lvl === livello + 1)?.[0] ?? expBase;
-      const expMostrata = c.expTotale - expBase;
-      const nextDelta = Math.max(0, nextExp - expBase);
+
 
       return `- ${c.name}
   Livello: ${livello}
-  Exp: ${expMostrata} / ${nextDelta}
+  Punti infamia: ${c.infamy}😈
   Soldi: ${c.money}💰
   
   -----------------------------`;
@@ -514,142 +493,6 @@ if (interaction.commandName === "create") {
        await interaction.editReply(createEmbed({
     title: "✏️ Rinomina completata",
     description: `Il tuo personaggio **${fromName}** è stato rinominato in **${newName}**.`,
-    color: 0x00ff99
-  }));
-  return;
-    }
-
-    /* ---------- ADDEXP ---------- */
-    if (interaction.commandName === "addexp") {
-      await interaction.deferReply();
-      if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-        await interaction.editReply(createEmbed({
-      title: "⛔ Permesso negato",
-      description: "Non hai il permesso per usare questo comando.",
-      color: 0xff0000
-    }));
-    return;
-      }
-      const user = interaction.options.getUser("to_user");
-      const name = interaction.options.getString("to_name");
-      const amount = interaction.options.getInteger("amount");
-
-      if (amount <= 0) {
-       await interaction.editReply(createEmbed({
-      title: "❌ Valore non valido",
-      description: "L'esperienza deve essere un numero positivo maggiore di zero.",
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      const char = await Character.findOne({ userId: user.id, name });
-      if (!char) {
-        await interaction.editReply(createEmbed({
-      title: "❌ Personaggio non trovato",
-      description: `**${name}** non trovato per ${user.username}.`,
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      char.expTotale += amount;
-      if (char.expTotale > maxExp) char.expTotale = maxExp;
-
-      let newLevel = 1;
-      for (let i = expTable.length - 1; i >= 0; i--) {
-        if (char.expTotale >= expTable[i][0]) {
-          newLevel = expTable[i][1];
-          char.expMostrata = char.expTotale - expTable[i][0];
-          break;
-        }
-      }
-
-      const oldLevel = char.level;
-      char.level = newLevel;
-
-      if (newLevel > oldLevel) {
-        const diff = newLevel - oldLevel;
-      }
-
-      await char.save();
-
-      if (newLevel > oldLevel) {
-         await interaction.editReply(createEmbed({
-      title: "🎉 Livello aumentato!",
-      description: `**${char.name}** è salito al livello **${newLevel}**!\n` +
-                   `Exp attuale: ${char.expMostrata} / prossimo livello`,
-      color: 0x00ff99
-    }));
-      } else {
-        await interaction.editReply(createEmbed({
-      title: "✅ Esperienza aggiunta",
-      description: `Aggiunti **${amount} exp** a **${char.name}**.\n` +
-                   `Livello attuale: ${char.level} | Exp: ${char.expMostrata}`,
-      color: 0x00ff99
-    }));
-  }
-  return;
-    }
-
-    /* ---------- REMOVEEXP ---------- */
-    if (interaction.commandName === "removeexp") {
-      await interaction.deferReply();
-      if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-       await interaction.editReply(createEmbed({
-      title: "⛔ Permesso negato",
-      description: "Non hai il permesso per usare questo comando.",
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      const user = interaction.options.getUser("to_user");
-      const name = interaction.options.getString("to_name");
-      const amount = interaction.options.getInteger("amount");
-
-      if (amount <= 0) {
-        await interaction.editReply(createEmbed({
-      title: "❌ Valore non valido",
-      description: "Devi inserire un numero positivo di exp da rimuovere.",
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      const character = await Character.findOne({ userId: user.id, name });
-      if (!character) {
-        await interaction.editReply(createEmbed({
-      title: "❌ Personaggio non trovato",
-      description: `**${name}** non trovato per ${user.username}.`,
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      character.expTotale = Math.max(0, character.expTotale - amount);
-
-      const entry = [...expTable].reverse().find(([expReq]) => character.expTotale >= expReq);
-      const livello = entry ? entry[1] : 1;
-      const expBase = entry ? entry[0] : 0;
-      const nextExp = expTable.find(([_, lvl]) => lvl === (livello + 1))?.[0] ?? expBase;
-      const expMostrata = character.expTotale - expBase;
-
-      const oldLevel = character.level;
-      character.level = livello;
-      character.expMostrata = expMostrata;
-
-      if (livello < oldLevel) {
-        const diff = oldLevel - livello;
-      }
-
-      await character.save();
-
-    await interaction.editReply(createEmbed({
-    title: "📉 Exp rimossa",
-    description: `Rimossi **${amount} exp** da **${character.name}** di ${user.username}.\n` +
-                 `Livello attuale: ${livello}\n` +
-                 `Exp: ${expMostrata} / ${nextExp - expBase}`,
     color: 0x00ff99
   }));
   return;
