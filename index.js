@@ -828,7 +828,7 @@ if (interaction.commandName === "removeadvantage") {
   await interaction.editReply(createEmbed({
     title: "🗑️ Vantaggio rimosso",
     description: `Rimosso vantaggio **${removed.nome}** (modificatore: ${removed.modificatore}) da **${char.name}**.`,
-    color: 0x00ff99
+   const color = 0x808080;
   }));
   return;
 }
