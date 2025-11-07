@@ -883,8 +883,9 @@ if (interaction.commandName === "help") {
   return;
 }
 
- /* ---------- DAILY ---------- */
+/* ---------- DAILY ---------- */
 if (interaction.commandName === "daily") {
+  // Risposta ephemeral con i flag
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const userId = interaction.user.id;
@@ -899,8 +900,7 @@ if (interaction.commandName === "daily") {
     return;
   }
 
-  const today = new Date();
-  const todayKey = today.toDateString(); // es. "Fri Nov 07 2025"
+  const todayKey = new Date().toDateString(); // es. "Fri Nov 07 2025"
   let claimedCount = 0;
 
   for (const char of chars) {
@@ -908,7 +908,7 @@ if (interaction.commandName === "daily") {
 
     if (lastKey !== todayKey) {
       char.money += 100;
-      char.lastDaily = today;
+      char.lastDaily = new Date();
       await char.save();
       claimedCount++;
     }
@@ -929,7 +929,6 @@ if (interaction.commandName === "daily") {
   }
   return;
 }
-
 
 
 
