@@ -197,7 +197,7 @@ const commands = [
       autocomplete: true
     }
   ]
-}
+},
   {
   name: "modifyinfamy",
   description: "(ADMIN ONLY) Aggiungi o rimuovi punti infamia ad un personaggio",
