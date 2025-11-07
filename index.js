@@ -90,7 +90,7 @@ const client = new Client({
 });
 
 /* ======================= PERMESSI ADMIN ======================= */
-const ADMIN_ROLE_ID = "1272491698538414120";
+const ADMIN_ROLE_ID = "783454797445464076";
 
 /* ======================= COMANDI SLASH ======================= */
 const commands = [
