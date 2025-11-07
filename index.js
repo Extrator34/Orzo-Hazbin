@@ -747,7 +747,7 @@ if (interaction.commandName === "show") {
       { name: "⭐ Exp", value: `${expMostrata} / ${nextDelta}\n`, inline: true },
       { name: "📊 Avanzamento", value: `${expBar}\n`, inline: false },
       { name: "💰 Soldi", value: `${char.money}💰\n`, inline: true },
-      { name: "😈 Infamia", value: `${char.infamy ?? 0}🔥\n`, inline: true },
+      { name: "😈 Infamia", value: `${char.infamy ?? 0}\n`, inline: true },
       { name: "🎯 Vantaggi", value: `${vantaggiText}`, inline: false }
     ],
     image: { url: char.image || null },
