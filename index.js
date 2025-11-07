@@ -284,7 +284,7 @@ if (interaction.commandName === "create") {
   }
 
   // ID del canale dove caricare l'immagine (es. #galleria-pg)
-  const mediaChannelId = "1272793692301819926"; // ← sostituisci con l'ID reale
+  const mediaChannelId = "778383958135930924"; // ← sostituisci con l'ID reale
   const mediaChannel = client.channels.cache.get(mediaChannelId);
 
   if (!mediaChannel || !mediaChannel.isTextBased()) {
