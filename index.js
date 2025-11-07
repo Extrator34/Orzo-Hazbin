@@ -680,7 +680,7 @@ if (interaction.commandName === "create") {
   return;
     }
 
-    /* ---------- SHOW ---------- */
+/* ---------- SHOW ---------- */
 if (interaction.commandName === "show") {
   await interaction.deferReply(); // subito, così l'interaction non scade
 
@@ -710,21 +710,24 @@ if (interaction.commandName === "show") {
     return;
   }
 
-  // Calcolo livello ed exp
+  // Calcolo livello attuale
   const entry = [...expTable].reverse().find(([expReq]) => char.expTotale >= expReq);
   const livello = entry ? entry[1] : 1;
-  const expBase = entry ? entry[0] : 0;
-  const nextExp = expTable.find(([_, lvl]) => lvl === livello + 1)?.[0] ?? expBase;
-  const expMostrata = char.expTotale - expBase;
-  const nextDelta = Math.max(0, nextExp - expBase);
 
-  // Barra exp (10 blocchi)
-  const progress = nextDelta > 0 ? Math.min(1, expMostrata / nextDelta) : 1;
+  // Barra infamia (10 blocchi)
+  const infamy = char.infamy ?? 0;
+  const progress = Math.min(1, infamy / 1000);
   const filledBlocks = Math.round(progress * 10);
   const emptyBlocks = 10 - filledBlocks;
-  const expBar = "🟩".repeat(filledBlocks) + "⬜".repeat(emptyBlocks);
+  let infamyBar = "🟥".repeat(filledBlocks) + "⬜".repeat(emptyBlocks);
 
- const color = 0x808080;
+  // Se ha almeno 1000 infamia e non è al livello massimo
+  const maxLevel = expTable[expTable.length - 1][1];
+  if (infamy >= 1000 && livello < maxLevel) {
+    infamyBar += "\n✨ level-up disponibile ✨";
+  }
+
+  const color = 0x808080;
 
   const vantaggiText = char.vantaggi?.length
     ? char.vantaggi
@@ -738,10 +741,9 @@ if (interaction.commandName === "show") {
     color,
     fields: [
       { name: "📈 Livello", value: `${livello}\n`, inline: true },
-      { name: "⭐ Exp", value: `${expMostrata} / ${nextDelta}\n`, inline: true },
-      { name: "📊 Avanzamento", value: `${expBar}\n`, inline: false },
+      { name: "📊 Avanzamento infamia", value: `${infamyBar}\n`, inline: false },
       { name: "💰 Soldi", value: `${char.money}💰\n`, inline: true },
-      { name: "😈 Infamia", value: `${char.infamy ?? 0}😈\n`, inline: true },
+      { name: "😈 Infamia", value: `${infamy}😈\n`, inline: true },
       { name: "🎯 Vantaggi", value: `${vantaggiText}`, inline: false }
     ],
     image: { url: char.image || null },
@@ -751,6 +753,7 @@ if (interaction.commandName === "show") {
   await interaction.editReply({ embeds: [embed] });
   return;
 }
+
 
 
 
@@ -965,7 +968,7 @@ if (interaction.commandName === "daily") {
   await character.save();
 
   await interaction.editReply(createEmbed({
-    title: "🔥 Modifica infamia",
+    title: "😈 Modifica infamia",
     description: `Aggiunti **${amount}** punti infamia a **${character.name}** di ${user.username}.\nTotale: ${character.infamy}🔥`,
     color: 0x00ff99
   }));
@@ -991,7 +994,7 @@ if (interaction.commandName === "infamylevelup") {
   if (char.infamy < 1000) {
     await interaction.editReply(createEmbed({
       title: "❌ Infamia insufficiente",
-      description: `**${char.name}** ha solo ${char.infamy}🔥. Servono almeno 1000🔥 per salire di livello.`,
+      description: `**${char.name}** ha solo ${char.infamy}😈. Servono almeno 1000😈 per salire di livello.`,
       color: 0xff0000
     }));
     return;
@@ -1017,9 +1020,9 @@ if (interaction.commandName === "infamylevelup") {
   await char.save();
 
   await interaction.editReply(createEmbed({
-    title: "🔥 Livello acquistato",
-    description: `**${char.name}** ha speso **1000🔥** per salire al livello **${newLevel}**!\n` +
-                 `Exp impostata a ${newBaseExp} | Infamia residua: ${char.infamy}🔥`,
+    title: "😈 Livello acquistato",
+    description: `**${char.name}** ha speso **1000😈** per salire al livello **${newLevel}**!\n` +
+                 `Exp impostata a ${newBaseExp} | Infamia residua: ${char.infamy}😈`,
     color: 0x00ff99
   }));
   return;
