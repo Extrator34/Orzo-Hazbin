@@ -716,7 +716,7 @@ if (interaction.commandName === "show") {
   const emptyBlocks = 10 - filledBlocks;
   const expBar = "🟩".repeat(filledBlocks) + "⬜".repeat(emptyBlocks);
 
- color = 0x808080; // fallback
+ const color = 0x808080;
 
   const vantaggiText = char.vantaggi?.length
     ? char.vantaggi
@@ -828,7 +828,7 @@ if (interaction.commandName === "removeadvantage") {
   await interaction.editReply(createEmbed({
     title: "🗑️ Vantaggio rimosso",
     description: `Rimosso vantaggio **${removed.nome}** (modificatore: ${removed.modificatore}) da **${char.name}**.`,
-   const color = 0x808080;
+    color = 0x808080;
   }));
   return;
 }
