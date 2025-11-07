@@ -562,7 +562,6 @@ if (interaction.commandName === "create") {
 
       if (newLevel > oldLevel) {
         const diff = newLevel - oldLevel;
-        char.hpMax += diff * char.hpPerLevel;
       }
 
       await char.save();
@@ -634,7 +633,6 @@ if (interaction.commandName === "create") {
 
       if (livello < oldLevel) {
         const diff = oldLevel - livello;
-        character.hpMax = Math.max(1, character.hpMax - diff * character.hpPerLevel);
       }
 
       await character.save();
