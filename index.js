@@ -718,19 +718,7 @@ if (interaction.commandName === "show") {
   const emptyBlocks = 10 - filledBlocks;
   const expBar = "🟩".repeat(filledBlocks) + "⬜".repeat(emptyBlocks);
 
-  // Colore embed in base al karma
-  let color;
-  if (char.karma >= -9 && char.karma <= 9) color = 0x808080;       // grigio
-  else if (char.karma >= -19 && char.karma <= -10) color = 0xff0000; // rosso
-  else if (char.karma >= -30 && char.karma <= -20) color = 0x000000; // nero
-  else if (char.karma >= 10 && char.karma <= 19) color = 0x00ffff;   // azzurro
-  else if (char.karma >= 20 && char.karma <= 30) color = 0xffffff;   // bianco
-  else color = 0x808080; // fallback
-
-  // Inventario e vantaggi
-const inventarioText = char.inventory?.length
-  ? char.inventory.map(i => `• ${i.nome} × ${i.quantita}`).join("\n")
-  : "Vuoto";
+ color = 0x808080; // fallback
 
   const vantaggiText = char.vantaggi?.length
     ? char.vantaggi
@@ -743,13 +731,10 @@ const inventarioText = char.inventory?.length
     title: `📄 ${char.name}`,
     color,
     fields: [
-      { name: "❤️ HP Max", value: `${char.hpMax}\n`, inline: true },
       { name: "📈 Livello", value: `${livello}\n`, inline: true },
       { name: "⭐ Exp", value: `${expMostrata} / ${nextDelta}\n`, inline: true },
       { name: "📊 Avanzamento", value: `${expBar}\n`, inline: false },
-      { name: "☯️ Karma", value: `${char.karma}\n`, inline: true },
       { name: "💰 Soldi", value: `${char.money}💰\n`, inline: true },
-      { name: "🎒 Inventario", value: `${inventarioText}`, inline: false },
       { name: "🎯 Vantaggi", value: `${vantaggiText}`, inline: false }
     ],
     image: { url: char.image || null },
