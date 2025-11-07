@@ -706,8 +706,6 @@ if (interaction.commandName === "help") {
 
   const adminCommands = [
     "`/modifymoney` – Aggiungi o rimuovi soldi",
-    "`/addexp` – Aggiungi exp",
-    "`/removeexp` – Rimuovi exp",
     "`/advantage` – Aggiungi vantaggio",
     "`/removeadvantage` – Rimuovi vantaggio"
   ];
@@ -818,8 +816,8 @@ if (interaction.commandName === "daily") {
   return;
 }
 
-/* ---------- INFAMYLEVELUP ---------- */
-if (interaction.commandName === "infamylevelup") {
+/* ---------- LEVELUP ---------- */
+if (interaction.commandName === "levelup") {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const fromName = interaction.options.getString("from_name");
