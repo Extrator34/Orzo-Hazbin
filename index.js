@@ -58,29 +58,10 @@ const Character = mongoose.model("Character", characterSchema);
 
 /* ======================= EXP TABLE ======================= */
 const expTable = [
-  [0, 1], [2000, 2], [5000, 3], [9000, 4], [14000, 5], [20000, 6],
-  [27000, 7], [35000, 8], [44000, 9], [54000, 10], [65000, 11],
-  [77000, 12], [90000, 13], [104000, 14], [119000, 15], [135000, 16],
-  [152000, 17], [170000, 18], [189000, 19], [209000, 20], [230000, 21],
-  [252000, 22], [275000, 23], [299000, 24], [324000, 25], [350000, 26],
-  [377000, 27], [405000, 28], [434000, 29], [464000, 30], [495000, 31],
-  [527000, 32], [560000, 33], [594000, 34], [629000, 35], [665000, 36],
-  [702000, 37], [740000, 38], [779000, 39], [819000, 40], [860000, 41],
-  [902000, 42], [945000, 43], [989000, 44], [1034000, 45], [1080000, 46],
-  [1127000, 47], [1175000, 48], [1224000, 49], [1274000, 50],
-  [1325000, 51], [1377000, 52], [1430000, 53], [1484000, 54],
-  [1539000, 55], [1595000, 56], [1652000, 57], [1710000, 58],
-  [1769000, 59], [1829000, 60], [1890000, 61], [1952000, 62],
-  [2015000, 63], [2079000, 64], [2144000, 65], [2210000, 66],
-  [2277000, 67], [2345000, 68], [2414000, 69], [2484000, 70],
-  [2555000, 71], [2627000, 72], [2700000, 73], [2774000, 74],
-  [2849000, 75], [2925000, 76], [3002000, 77], [3080000, 78],
-  [3159000, 79], [3239000, 80], [3320000, 81], [3402000, 82],
-  [3485000, 83], [3569000, 84], [3654000, 85], [3740000, 86],
-  [3827000, 87], [3915000, 88], [4004000, 89], [4094000, 90],
-  [4185000, 91], [4277000, 92], [4370000, 93], [4464000, 94],
-  [4559000, 95], [4655000, 96], [4752000, 97], [4850000, 98],
-  [4949000, 99], [5049000, 100]
+  [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6],
+  [6, 7], [7, 8], [8, 9], [9, 10], [10, 11],
+  [11, 12], [12, 13], [13, 14], [14, 15], [15, 16],
+  [16, 17], [17, 18], [18, 19], [19, 20]
 ];
 const maxExp = 5049000;
 
@@ -204,6 +185,19 @@ const commands = [
   name: "daily",
   description: "Claim giornaliero: ottieni 100💰 per ogni tuo personaggio"
 },
+  {
+  name: "infamylevelup",
+  description: "Spendi 1000 punti infamia per far salire di livello un tuo personaggio",
+  options: [
+    {
+      name: "from_name",
+      type: 3,
+      description: "Nome del personaggio da livellare",
+      required: true,
+      autocomplete: true
+    }
+  ]
+}
   {
   name: "modifyinfamy",
   description: "(ADMIN ONLY) Aggiungi o rimuovi punti infamia ad un personaggio",
@@ -978,6 +972,58 @@ if (interaction.commandName === "daily") {
   return;
 }
 
+/* ---------- INFAMYLEVELUP ---------- */
+if (interaction.commandName === "infamylevelup") {
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const fromName = interaction.options.getString("from_name");
+  const char = await Character.findOne({ userId: interaction.user.id, name: fromName });
+
+  if (!char) {
+    await interaction.editReply(createEmbed({
+      title: "❌ Personaggio non trovato",
+      description: `Non hai nessun personaggio chiamato **${fromName}**.`,
+      color: 0xff0000
+    }));
+    return;
+  }
+
+  if (char.infamy < 1000) {
+    await interaction.editReply(createEmbed({
+      title: "❌ Infamia insufficiente",
+      description: `**${char.name}** ha solo ${char.infamy}🔥. Servono almeno 1000🔥 per salire di livello.`,
+      color: 0xff0000
+    }));
+    return;
+  }
+
+  // Calcolo nuovo livello
+  const newLevel = char.level + 1;
+  const newBaseExp = expTable.find(([_, lvl]) => lvl === newLevel)?.[0];
+
+  if (!newBaseExp) {
+    await interaction.editReply(createEmbed({
+      title: "🚫 Livello massimo raggiunto",
+      description: `**${char.name}** è già al livello massimo (${char.level}).`,
+      color: 0xff0000
+    }));
+    return;
+  }
+
+  char.level = newLevel;
+  char.expTotale = newBaseExp;
+  char.expMostrata = 0;
+  char.infamy -= 1000;
+  await char.save();
+
+  await interaction.editReply(createEmbed({
+    title: "🔥 Livello acquistato",
+    description: `**${char.name}** ha speso **1000🔥** per salire al livello **${newLevel}**!\n` +
+                 `Exp impostata a ${newBaseExp} | Infamia residua: ${char.infamy}🔥`,
+    color: 0x00ff99
+  }));
+  return;
+}
 
 
     /* ---------- CHANGEIMAGE ---------- */
