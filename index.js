@@ -47,6 +47,7 @@ const characterSchema = new mongoose.Schema({
   name: String,
   image: { type: String },
   money: { type: Number, default: 500 },
+  lastDaily: { type: Date, default: null },
   level: { type: Number, default: 1 },
   expTotale: { type: Number, default: 0 },
   expMostrata: { type: Number, default: 0 },
@@ -198,6 +199,10 @@ const commands = [
     { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
     { name: "nome", type: 3, description: "Nome del vantaggio da rimuovere", required: true }
   ]
+},
+  {
+  name: "daily",
+  description: "Claim giornaliero: ottieni 100💰 per ogni tuo personaggio"
 },
 ];
 
@@ -878,6 +883,55 @@ if (interaction.commandName === "help") {
   await interaction.editReply({ embeds: [embed] });
   return;
 }
+
+ /* ---------- DAILY ---------- */
+if (interaction.commandName === "daily") {
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const userId = interaction.user.id;
+  const chars = await Character.find({ userId });
+
+  if (!chars.length) {
+    await interaction.editReply(createEmbed({
+      title: "❌ Nessun personaggio",
+      description: "Non hai personaggi su cui fare il claim giornaliero.",
+      color: 0xff0000
+    }));
+    return;
+  }
+
+  const today = new Date();
+  const todayKey = today.toDateString(); // es. "Fri Nov 07 2025"
+  let claimedCount = 0;
+
+  for (const char of chars) {
+    const lastKey = char.lastDaily ? new Date(char.lastDaily).toDateString() : null;
+
+    if (lastKey !== todayKey) {
+      char.money += 100;
+      char.lastDaily = today;
+      await char.save();
+      claimedCount++;
+    }
+  }
+
+  if (claimedCount === 0) {
+    await interaction.editReply(createEmbed({
+      title: "⏳ Daily già riscattato",
+      description: "Hai già fatto il claim giornaliero per tutti i tuoi personaggi. Riprova dopo mezzanotte!",
+      color: 0xff0000
+    }));
+  } else {
+    await interaction.editReply(createEmbed({
+      title: "✅ Daily claim effettuato",
+      description: `Hai ricevuto **100💰** per ciascun personaggio.\nPersonaggi aggiornati: ${claimedCount}`,
+      color: 0x00ff99
+    }));
+  }
+  return;
+}
+
+
 
 
     /* ---------- CHANGEIMAGE ---------- */
