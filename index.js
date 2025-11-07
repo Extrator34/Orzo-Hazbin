@@ -3,6 +3,7 @@ import http from "http";
 import { Client, GatewayIntentBits, REST, Routes, Events } from "discord.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags } from "discord.js";
 
 dotenv.config();
 
