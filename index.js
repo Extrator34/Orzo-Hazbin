@@ -46,6 +46,7 @@ const characterSchema = new mongoose.Schema({
   name: String,
   image: { type: String },
   money: { type: Number, default: 500 },
+  infamy: { type: Number, default: 0 },
   lastDaily: { type: Date, default: null },
   level: { type: Number, default: 1 },
   expTotale: { type: Number, default: 0 },
@@ -202,6 +203,15 @@ const commands = [
   {
   name: "daily",
   description: "Claim giornaliero: ottieni 100💰 per ogni tuo personaggio"
+},
+  {
+  name: "modifyinfamy",
+  description: "(ADMIN ONLY) Aggiungi o rimuovi punti infamia ad un personaggio",
+  options: [
+    { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
+    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
+    { name: "amount", type: 4, description: "Quantità di punti infamia da aggiungere", required: true },
+  ],
 },
 ];
 
@@ -927,6 +937,43 @@ if (interaction.commandName === "daily") {
       color: 0x00ff99
     }));
   }
+  return;
+}
+
+     /* ---------- MODIFYINFAMY ---------- */
+    if (interaction.commandName === "modifyinfamy") {
+  await interaction.deferReply();
+  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    await interaction.editReply(createEmbed({
+      title: "⛔ Permesso negato",
+      description: "Non hai il permesso per usare questo comando.",
+      color: 0xff0000
+    }));
+    return;
+  }
+
+  const user = interaction.options.getUser("to_user");
+  const name = interaction.options.getString("to_name");
+  const amount = interaction.options.getInteger("amount");
+
+  const character = await Character.findOne({ userId: user.id, name });
+  if (!character) {
+    await interaction.editReply(createEmbed({
+      title: "❌ Personaggio non trovato",
+      description: `**${name}** non trovato per ${user.username}.`,
+      color: 0xff0000
+    }));
+    return;
+  }
+
+  character.infamy += amount;
+  await character.save();
+
+  await interaction.editReply(createEmbed({
+    title: "🔥 Modifica infamia",
+    description: `Aggiunti **${amount}** punti infamia a **${character.name}** di ${user.username}.\nTotale: ${character.infamy}🔥`,
+    color: 0x00ff99
+  }));
   return;
 }
 
