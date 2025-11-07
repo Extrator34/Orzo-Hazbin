@@ -169,70 +169,12 @@ const commands = [
     ],
   },
   {
-    name: "sethpmax",
-    description: "(ADMIN ONLY) Modifica gli HP massimi di un personaggio",
-    options: [
-      { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
-      { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
-      { name: "amount", type: 4, description: "Nuovo valore di HP massimi", required: true },
-    ],
-  },
-  {
-    name: "sethpperlevel",
-    description: "(ADMIN ONLY) Modifica gli HP guadagnati per livello",
-    options: [
-      { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
-      { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
-      { name: "amount", type: 4, description: "Nuovo valore di HP per livello", required: true },
-    ],
-  },
-  {
     name: "deletepg",
     description: "Elimina uno dei tuoi personaggi",
     options: [
       { type: 3, name: "from_name", description: "Nome del personaggio da eliminare", required: true, autocomplete: true }
     ]
   },
-  {
-    name: "addkarma",
-    description: "(ADMIN ONLY) Modifica il karma di un personaggio.",
-    options: [
-      { name: "to_user", description: "Seleziona l'utente proprietario del personaggio.", type: 6, required: true },
-      { name: "to_name", description: "Nome del personaggio a cui modificare il karma.", type: 3, required: true, autocomplete: true },
-      { name: "amount", description: "Quantità di karma da aggiungere (può essere positiva o negativa).", type: 4, required: true },
-    ],
-  },
-  {
-  name: "addinventory",
-  description: "(ADMIN ONLY) Aggiungi un oggetto all'inventario di un personaggio",
-  options: [
-    { name: "to_user", type: 6, required: true, description: "Utente proprietario del personaggio" },
-    { name: "to_name", type: 3, required: true, description: "Nome del personaggio", autocomplete: true },
-    { name: "item", type: 3, required: true, description: "Nome dell'oggetto da aggiungere" },
-    { name: "quantita", type: 4, required: true, description: "Quantità da aggiungere" }
-  ]
-},
- {
-  name: "removeinventory",
-  description: "(ADMIN ONLY) Rimuovi un oggetto dall'inventario di un personaggio",
-  options: [
-    { name: "to_user", type: 6, required: true, description: "Utente proprietario del personaggio" },
-    { name: "to_name", type: 3, required: true, description: "Nome del personaggio", autocomplete: true },
-    { name: "item", type: 3, required: true, description: "Nome dell'oggetto da rimuovere" },
-    { name: "quantita", type: 4, required: true, description: "Quantità da rimuovere" }
-  ]
-},
- {
-  name: "give",
-  description: "Dai un item a qualcuno",
-  options: [
-    { name: "from_name", type: 3, required: true, description: "Il tuo personaggio che dà l'item", autocomplete: true },
-    { name: "to_user", type: 6, required: true, description: "Utente proprietario del personaggio" },
-    { name: "to_name", type: 3, required: true, description: "Nome del personaggio che riceve l'item", autocomplete: true },
-    { name: "item", type: 3, required: true, description: "Nome dell'oggetto da dare" },
-    { name: "quantita", type: 4, required: true, description: "Quantità da dare" }
-  ]
-},
   {
   name: "advantage",
   description: "(ADMIN ONLY) Aggiungi un vantaggio a un personaggio",
@@ -255,7 +197,6 @@ const commands = [
     { name: "image", type: 11, description: "Nuova immagine del personaggio", required: true }
   ]
 },
-
 {
   name: "removeadvantage",
   description: "(ADMIN ONLY) Rimuovi un vantaggio da un personaggio",
@@ -715,79 +656,6 @@ if (interaction.commandName === "create") {
   return;
     }
 
-    /* ---------- SETHPMAX ---------- */
-    if (interaction.commandName === "sethpmax") {
-      await interaction.deferReply();
-      if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-        await interaction.editReply(createEmbed({
-      title: "⛔ Permesso negato",
-      description: "Non hai il permesso per usare questo comando.",
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      const user = interaction.options.getUser("to_user");
-      const name = interaction.options.getString("to_name");
-      const amount = interaction.options.getInteger("amount");
-
-      const char = await Character.findOne({ userId: user.id, name });
-      if (!char) {
-        await interaction.editReply(createEmbed({
-      title: "❌ Personaggio non trovato",
-      description: `**${name}** non trovato per ${user.username}.`,
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      char.hpMax = amount;
-      await char.save();
-
-      await interaction.editReply(createEmbed({
-    title: "❤️ HP massimi aggiornati",
-    description: `HP massimi di **${char.name}** aggiornati a **${amount}**.`,
-    color: 0x00ff99
-  }));
-  return;
-    }
-
-    /* ---------- SETHPPERLEVEL ---------- */
-    if (interaction.commandName === "sethpperlevel") {
-      await interaction.deferReply();
-      if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-        await interaction.editReply(createEmbed({
-      title: "⛔ Permesso negato",
-      description: "Non hai il permesso per usare questo comando.",
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      const user = interaction.options.getUser("to_user");
-      const name = interaction.options.getString("to_name");
-      const amount = interaction.options.getInteger("amount");
-
-      const char = await Character.findOne({ userId: user.id, name });
-      if (!char) {
-        await interaction.editReply(createEmbed({
-      title: "❌ Personaggio non trovato",
-      description: `**${name}** non trovato per ${user.username}.`,
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      char.hpPerLevel = amount;
-      await char.save();
-
-     await interaction.editReply(createEmbed({
-    title: "❤️ HP per livello aggiornati",
-    description: `HP per livello di **${char.name}** aggiornati a **${amount}**.`,
-    color: 0x00ff99
-  }));
-  return;
-    }
 
     /* ---------- DELETEPG ---------- */
     if (interaction.commandName === "deletepg") {
@@ -808,46 +676,6 @@ if (interaction.commandName === "create") {
       await interaction.editReply(createEmbed({
     title: "🗑️ Personaggio eliminato",
     description: `Il personaggio **${char.name}** è stato eliminato con successo.`,
-    color: 0x00ff99
-  }));
-  return;
-    }
-
-    /* ---------- ADDKARMA ---------- */
-    if (interaction.commandName === "addkarma") {
-      await interaction.deferReply();
-      if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-        await interaction.editReply(createEmbed({
-      title: "⛔ Permesso negato",
-      description: "Non hai il permesso per usare questo comando.",
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      const user = interaction.options.getUser("to_user");
-      const name = interaction.options.getString("to_name");
-      const amount = interaction.options.getInteger("amount");
-
-      const char = await Character.findOne({ userId: user.id, name });
-      if (!char) {
-       await interaction.editReply(createEmbed({
-      title: "❌ Personaggio non trovato",
-      description: `**${name}** non trovato per ${user.username}.`,
-      color: 0xff0000
-    }));
-    return;
-      }
-
-      char.karma += amount;
-      if (char.karma < -30) char.karma = -30;
-      if (char.karma > 30) char.karma = 30;
-
-      await char.save();
-
-      await interaction.editReply(createEmbed({
-    title: "☯️ Karma modificato",
-    description: `Karma di **${char.name}** modificato di **${amount}**.\nValore attuale: **${char.karma}** (range valido: -30 → +30).`,
     color: 0x00ff99
   }));
   return;
@@ -940,107 +768,6 @@ const inventarioText = char.inventory?.length
 }
 
 
-
-    /* ---------- ADDINVENTORY ---------- */
-  if (interaction.commandName === "addinventory") {
-  await interaction.deferReply();
-  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-    await interaction.editReply(createEmbed({
-      title: "⛔ Permesso negato",
-      description: "Non hai il permesso per usare questo comando.",
-      color: 0xff0000
-    }));
-    return;
-  }
-
-  const user = interaction.options.getUser("to_user");
-  const name = interaction.options.getString("to_name");
-  const item = interaction.options.getString("item");
-  const quantita = interaction.options.getInteger("quantita");
-
-  const char = await Character.findOne({ userId: user.id, name });
-  if (!char) {
-    await interaction.editReply(createEmbed({
-      title: "❌ Personaggio non trovato",
-      description: `**${name}** non trovato per ${user.username}.`,
-      color: 0xff0000
-    }));
-    return;
-  }
-
-  if (!Array.isArray(char.inventory)) char.inventory = [];
-
-  const existing = char.inventory.find(i => i.nome.toLowerCase() === item.toLowerCase());
-  if (existing) {
-    existing.quantita += quantita;
-  } else {
-    char.inventory.push({ nome: item, quantita });
-  }
-
-  await char.save();
-
-  await interaction.editReply(createEmbed({
-    title: "✅ Oggetto aggiunto",
-    description: `Aggiunto **${quantita}x ${item}** all'inventario di **${char.name}**.`,
-    color: 0x00ff99
-  }));
-  return;
-}
-
-
-    /* ---------- REMOVEINVENTORY ---------- */
-    if (interaction.commandName === "removeinventory") {
-  await interaction.deferReply();
-  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-    await interaction.editReply(createEmbed({
-      title: "⛔ Permesso negato",
-      description: "Non hai il permesso per usare questo comando.",
-      color: 0xff0000
-    }));
-    return;
-  }
-
-  const user = interaction.options.getUser("to_user");
-  const name = interaction.options.getString("to_name");
-  const item = interaction.options.getString("item");
-  const quantita = interaction.options.getInteger("quantita");
-
-  const char = await Character.findOne({ userId: user.id, name });
-  if (!char) {
-    await interaction.editReply(createEmbed({
-      title: "❌ Personaggio non trovato",
-      description: `**${name}** non trovato per ${user.username}.`,
-      color: 0xff0000
-    }));
-    return;
-  }
-
-  if (!Array.isArray(char.inventory)) char.inventory = [];
-
-  const obj = char.inventory.find(i => i.nome.toLowerCase() === item.toLowerCase());
-  if (!obj) {
-    await interaction.editReply(createEmbed({
-      title: "❌ Oggetto non trovato",
-      description: `**${item}** non è presente nell'inventario di **${char.name}**.`,
-      color: 0xff0000
-    }));
-    return;
-  }
-
-  obj.quantita -= quantita;
-  if (obj.quantita <= 0) {
-    char.inventory = char.inventory.filter(i => i.nome.toLowerCase() !== item.toLowerCase());
-  }
-
-  await char.save();
-
-  await interaction.editReply(createEmbed({
-    title: "🗑️ Oggetto rimosso",
-    description: `Rimossi **${quantita}x ${item}** dall'inventario di **${char.name}**.`,
-    color: 0x00ff99
-  }));
-  return;
-}
 
 /* ---------- ADVANTAGE ---------- */
 if (interaction.commandName === "advantage") {
