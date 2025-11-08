@@ -255,26 +255,29 @@ if (interaction.isStringSelectMenu()) {
   char.abilita.push(...baseAbilities);
 
   // Caso speciale: Imp → scelta tra tre abilità
-  if (selectedRace === "imp") {
-    const choiceMenu = new StringSelectMenuBuilder()
-      .setCustomId(`select_imp_${interaction.user.id}_${encodeURIComponent(charName)}`)
-      .setPlaceholder("Scegli un'abilità iniziale per Imp")
-      .addOptions([
-        { label: "Armi da Fuoco Leggere", value: "armi_leggere" },
-        { label: "Armi Pesanti", value: "armi_pesanti" },
-        { label: "Corpo a Corpo Urbano", value: "corpo_a_corpo" }
-      ]);
+ if (selectedRace === "imp") {
+  console.log("🔎 [DEBUG select_race] Razza Imp selezionata, costruisco menu abilità extra");
+  console.log("🔎 [DEBUG select_race] charName:", charName, "userId:", interaction.user.id);
 
-    const row = new ActionRowBuilder().addComponents(choiceMenu);
+  const choiceMenu = new StringSelectMenuBuilder()
+    .setCustomId(`select_imp_${interaction.user.id}_${encodeURIComponent(charName)}`)
+    .setPlaceholder("Scegli un'abilità iniziale per Imp")
+    .addOptions([
+      { label: "Armi da Fuoco Leggere", value: "armi_leggere" },
+      { label: "Armi Pesanti", value: "armi_pesanti" },
+      { label: "Corpo a Corpo Urbano", value: "corpo_a_corpo" }
+    ]);
+
+  const row = new ActionRowBuilder().addComponents(choiceMenu);
 
   await interaction.update({
-  content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
-  components: [] // rimuovo il menu
-});
+    content: `✅ Razza selezionata: **Imp** per **${char.name}**.\nOra scegli un'abilità aggiuntiva:`,
+    components: [row]
+  });
+  await char.save();
+  return;
+}
 
-    await char.save();
-    return;
-  }
 
   await char.save();
 
