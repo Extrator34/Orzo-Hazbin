@@ -287,7 +287,7 @@ if (interaction.isStringSelectMenu()) {
 }
 
  /* ---------- RAZZA IMP ---------- */
-  if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
   const parts = interaction.customId.split("_");
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
@@ -304,35 +304,22 @@ if (interaction.isStringSelectMenu()) {
   }
 
   const abilityMap = {
-    armi_leggere: {
-      nome: "Armi da Fuoco Leggere",
-      descrizione: "Uso di pistole e revolver",
-      livello: 1
-    },
-    armi_pesanti: {
-      nome: "Armi Pesanti",
-      descrizione: "Uso di fucili e mitragliatrici infernali",
-      livello: 1
-    },
-    corpo_a_corpo: {
-      nome: "Corpo a Corpo Urbano",
-      descrizione: "Combattimento fisico ravvicinato",
-      livello: 1
-    }
+    armi_leggere: { nome: "Armi da Fuoco Leggere", descrizione: "Uso di pistole e revolver", livello: 1 },
+    armi_pesanti: { nome: "Armi Pesanti", descrizione: "Uso di fucili e mitragliatrici infernali", livello: 1 },
+    corpo_a_corpo: { nome: "Corpo a Corpo Urbano", descrizione: "Combattimento fisico ravvicinato", livello: 1 }
   };
 
-  // Aggiungi l’abilità scelta
   char.abilita.push(abilityMap[selectedAbility]);
   await char.save();
 
-  // Rispondi correttamente all’interaction del menu
+  // Risposta corretta: update del messaggio che conteneva il menu
   await interaction.update({
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
     components: [], // rimuovo il menu
     flags: MessageFlags.Ephemeral
   });
-  return;
 }
+
 
 
 
