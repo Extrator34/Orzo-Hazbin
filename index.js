@@ -277,6 +277,27 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     return;
   }
 
+  if (selectedRace === "peccatore") {
+  const choiceMenu1 = new StringSelectMenuBuilder()
+    .setCustomId(`select_peccatore1_${interaction.user.id}_${encodeURIComponent(charName)}`)
+    .setPlaceholder("Scegli la prima abilità da Peccatore")
+    .addOptions(
+      abilitaInfernali.map(a => ({ label: a.nome, value: a.nome }))
+    );
+
+  const row1 = new ActionRowBuilder().addComponents(choiceMenu1);
+
+  await interaction.reply({
+    content: `✅ Razza selezionata: **Peccatore** per **${char.name}**.\nOra scegli la **prima abilità**:`,
+    components: [row1],
+    flags: MessageFlags.Ephemeral
+  });
+
+  await char.save();
+  return;
+}
+
+
   await char.save();
 
   await interaction.update({
@@ -318,8 +339,70 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   });
 }
 
+    /* ---------- RAZZA PECCATORI ---------- */
 
 
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_peccatore1")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[2];
+  const charName = decodeURIComponent(parts.slice(3).join("_"));
+
+  const selectedAbility1 = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Salva la prima abilità
+  const abilitaObj1 = abilitaInfernali.find(a => a.nome === selectedAbility1);
+  if (abilitaObj1) char.abilita.push(abilitaObj1);
+  await char.save();
+
+  // Filtra la lista escludendo la prima abilità scelta
+  const abilitaFiltrate = abilitaInfernali.filter(a => a.nome !== selectedAbility1);
+
+  const choiceMenu2 = new StringSelectMenuBuilder()
+    .setCustomId(`select_peccatore2_${interaction.user.id}_${encodeURIComponent(charName)}`)
+    .setPlaceholder("Scegli la seconda abilità da Peccatore")
+    .addOptions(
+      abilitaFiltrate.map(a => ({ label: a.nome, value: a.nome }))
+    );
+
+  const row2 = new ActionRowBuilder().addComponents(choiceMenu2);
+
+  await interaction.update({
+    content: `✅ Prima abilità selezionata: **${selectedAbility1}**.\nOra scegli la **seconda abilità**:`,
+    components: [row2]
+  });
+}
+
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_peccatore2")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[2];
+  const charName = decodeURIComponent(parts.slice(3).join("_"));
+
+  const selectedAbility2 = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Salva la seconda abilità
+  const abilitaObj2 = abilitaInfernali.find(a => a.nome === selectedAbility2);
+  if (abilitaObj2) char.abilita.push(abilitaObj2);
+  await char.save();
+
+  await interaction.update({
+    content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
+    components: []
+  });
+}
+
+    
 
 
   /* ---------- Autocomplete ---------- */
