@@ -231,10 +231,9 @@ if (interaction.isStringSelectMenu()) {
   if (parts[0] !== "select" || parts[1] !== "race") return;
 
   const userId = parts[2];
-  // ricostruisco il nome decodificando
   const charName = decodeURIComponent(parts.slice(3).join("_"));
 
-  const selectedRace = interaction.values[0];
+  const selectedRace = interaction.values[0]; // es. "hellhound"
   const char = await Character.findOne({ userId, name: charName });
 
   if (!char) {
@@ -245,17 +244,79 @@ if (interaction.isStringSelectMenu()) {
     return;
   }
 
+  // Salva la razza
   char.race = selectedRace;
+
+  // Aggiungi abilità iniziali
+  const baseAbilities = raceAbilities[selectedRace] || [];
+  if (!Array.isArray(char.abilita)) char.abilita = [];
+  char.abilita.push(...baseAbilities);
+
+  // Caso speciale: Imp → scelta tra tre abilità
+  if (selectedRace === "imp") {
+    const choiceMenu = new StringSelectMenuBuilder()
+      .setCustomId(`select_imp_${interaction.user.id}_${encodeURIComponent(charName)}`)
+      .setPlaceholder("Scegli un'abilità iniziale per Imp")
+      .addOptions([
+        { label: "Armi da Fuoco Leggere", value: "armi_leggere" },
+        { label: "Armi Pesanti", value: "armi_pesanti" },
+        { label: "Corpo a Corpo Urbano", value: "corpo_a_corpo" }
+      ]);
+
+    const row = new ActionRowBuilder().addComponents(choiceMenu);
+
+    await interaction.update({
+      content: `✅ Razza selezionata: **Imp** per **${char.name}**.\nOra scegli un'abilità aggiuntiva:`,
+      components: [row],
+      flags: MessageFlags.Ephemeral
+    });
+    await char.save();
+    return;
+  }
+
   await char.save();
 
   await interaction.update({
-    content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+    content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
     components: [],
     flags: MessageFlags.Ephemeral
   });
   return;
 }
 
+ /* ---------- MENU IMP ---------- */
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[2];
+  const charName = decodeURIComponent(parts.slice(3).join("_"));
+
+  const selectedAbility = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+
+  if (!char) {
+    await interaction.reply({
+      content: "❌ Personaggio non trovato.",
+      flags: MessageFlags.Ephemeral
+    });
+    return;
+  }
+
+  const abilityMap = {
+    armi_leggere: { nome: "Armi da Fuoco Leggere", descrizione: "Uso di pistole e revolver", livello: 1 },
+    armi_pesanti: { nome: "Armi Pesanti", descrizione: "Uso di fucili e mitragliatrici infernali", livello: 1 },
+    corpo_a_corpo: { nome: "Corpo a Corpo Urbano", descrizione: "Combattimento fisico ravvicinato", livello: 1 }
+  };
+
+  char.abilita.push(abilityMap[selectedAbility]);
+  await char.save();
+
+  await interaction.update({
+    content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
+    components: [],
+    flags: MessageFlags.Ephemeral
+  });
+  return;
+}
 
 
   /* ---------- Autocomplete ---------- */
