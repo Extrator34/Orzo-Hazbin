@@ -1,5 +1,5 @@
 // askRace.js
-import { ActionRowBuilder, StringSelectMenuBuilder, MessageFlags  } from "discord.js";
+import { ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
 
 export async function askRace({ interaction, characterName }) {
   const raceOptions = [
@@ -9,7 +9,8 @@ export async function askRace({ interaction, characterName }) {
   ];
 
   const menu = new StringSelectMenuBuilder()
-    .setCustomId(`select_race_${interaction.user.id}_${characterName}`)
+    // encodeURIComponent per rendere sicuro il nome
+    .setCustomId(`select_race_${interaction.user.id}_${encodeURIComponent(characterName)}`)
     .setPlaceholder("Scegli la razza del tuo personaggio")
     .addOptions(
       raceOptions.map(r => ({
@@ -20,9 +21,8 @@ export async function askRace({ interaction, characterName }) {
 
   const row = new ActionRowBuilder().addComponents(menu);
 
-  await interaction.followUp({
+  await interaction.channel.send({
     content: `🧬 <@${interaction.user.id}>, scegli la razza per **${characterName}**:`,
-    components: [row],
-    flags: MessageFlags.Ephemeral
+    components: [row]
   });
 }
