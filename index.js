@@ -3,6 +3,7 @@ import http from "http";
 import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags } from "discord.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import { askRace } from "./askRace.js";
 dotenv.config();
 
 /* ======================= FUNZIONE EMBED ======================= */
