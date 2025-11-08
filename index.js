@@ -284,7 +284,6 @@ if (interaction.isStringSelectMenu()) {
   await interaction.update({
     content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
     components: [],
-    flags: MessageFlags.Ephemeral
   });
   return;
 }
