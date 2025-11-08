@@ -52,6 +52,7 @@ const characterSchema = new mongoose.Schema({
   level: { type: Number, default: 1 },
   expTotale: { type: Number, default: 0 },
   expMostrata: { type: Number, default: 0 },
+  race: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   vantaggi: { type: [{ nome: String, modificatore: Number }], default: [] }
 });
@@ -214,6 +215,40 @@ client.once(Events.ClientReady, () => {
 
 client.on("interactionCreate", async (interaction) => {
   try {
+
+    /* ---------- SELEZIONE RAZZA ---------- */
+if (interaction.isStringSelectMenu()) {
+  const [prefix, userId, charName] = interaction.customId.split("_");
+
+  if (prefix !== "select" || userId !== interaction.user.id.toString()) {
+    await interaction.reply({
+      content: "⛔ Non puoi selezionare la razza per un personaggio che non ti appartiene.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  const selectedRace = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+
+  if (!char) {
+    await interaction.reply({
+      content: "❌ Personaggio non trovato.",
+      ephemeral: true
+    });
+    return;
+  }
+
+  char.race = selectedRace;
+  await char.save();
+
+  await interaction.update({
+    content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+    components: []
+  });
+  return;
+}
+
   /* ---------- Autocomplete ---------- */
 if (interaction.isAutocomplete()) {
   const focused = interaction.options.getFocused(true);
@@ -309,22 +344,26 @@ if (interaction.commandName === "create") {
     return;
   }
 
-  // Crea il personaggio con il link permanente
-  const newChar = new Character({
-    userId: interaction.user.id,
-    name,
-    image: permanentUrl
-  });
-  await newChar.save();
+// Crea il personaggio con il link permanente
+const newChar = new Character({
+  userId: interaction.user.id,
+  name,
+  image: permanentUrl
+});
+await newChar.save();
 
-  await interaction.editReply({
-    embeds: [{
-      title: `✅ Personaggio creato: ${name}`,
-      description: `Creato da <@${interaction.user.id}>`,
-      image: { url: permanentUrl },
-      color: 0x00ff99
-    }]
-  });
+// Risposta iniziale
+await interaction.editReply({
+  embeds: [{
+    title: `✅ Personaggio creato: ${name}`,
+    description: `Creato da <@${interaction.user.id}>`,
+    image: { url: permanentUrl },
+    color: 0x00ff99
+  }]
+});
+
+// Chiedi la razza nel canale dove è stato eseguito il comando
+await askRace({ interaction, characterName: name });
   return;
 }
 
