@@ -216,15 +216,11 @@ client.once(Events.ClientReady, () => {
 client.on("interactionCreate", async (interaction) => {
   try {
 
-    /* ---------- SELEZIONE RAZZA ---------- */
+   /* ---------- SELEZIONE RAZZA ---------- */
 if (interaction.isStringSelectMenu()) {
   const [prefix, userId, charName] = interaction.customId.split("_");
 
-  if (prefix !== "select" || userId !== interaction.user.id.toString()) {
-    await interaction.reply({
-      content: "⛔ Non puoi selezionare la razza per un personaggio che non ti appartiene.",
-      ephemeral: true
-    });
+  if (prefix !== "select") {
     return;
   }
 
@@ -248,6 +244,7 @@ if (interaction.isStringSelectMenu()) {
   });
   return;
 }
+
 
   /* ---------- Autocomplete ---------- */
 if (interaction.isAutocomplete()) {
