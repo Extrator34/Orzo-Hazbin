@@ -1,6 +1,6 @@
 // index.js
 import http from "http";
-import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags, StringSelectMenuBuilder } from "discord.js";
+import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags, StringSelectMenuBuilder, ActionRowBuilder } from "discord.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { askRace } from "./askRace.js";
@@ -286,8 +286,9 @@ if (interaction.isStringSelectMenu()) {
   return;
 }
 
- /* ---------- MENU IMP ---------- */
-    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
+ /* ---------- RAZZA IMP ---------- */
+   // Gestione scelta extra per Imp
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
   const parts = interaction.customId.split("_");
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
@@ -304,11 +305,24 @@ if (interaction.isStringSelectMenu()) {
   }
 
   const abilityMap = {
-    armi_leggere: { nome: "Armi da Fuoco Leggere", descrizione: "Uso di pistole e revolver", livello: 1 },
-    armi_pesanti: { nome: "Armi Pesanti", descrizione: "Uso di fucili e mitragliatrici infernali", livello: 1 },
-    corpo_a_corpo: { nome: "Corpo a Corpo Urbano", descrizione: "Combattimento fisico ravvicinato", livello: 1 }
+    armi_leggere: {
+      nome: "Armi da Fuoco Leggere",
+      descrizione: "Uso di pistole e revolver",
+      livello: 1
+    },
+    armi_pesanti: {
+      nome: "Armi Pesanti",
+      descrizione: "Uso di fucili e mitragliatrici infernali",
+      livello: 1
+    },
+    corpo_a_corpo: {
+      nome: "Corpo a Corpo Urbano",
+      descrizione: "Combattimento fisico ravvicinato",
+      livello: 1
+    }
   };
 
+  // Aggiungi l’abilità scelta
   char.abilita.push(abilityMap[selectedAbility]);
   await char.save();
 
