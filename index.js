@@ -312,7 +312,6 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   char.abilita.push(abilityMap[selectedAbility]);
   await char.save();
 
-  // Risposta corretta: update del messaggio che conteneva il menu
   await interaction.update({
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
     components: [], // rimuovo il menu
