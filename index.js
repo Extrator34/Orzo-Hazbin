@@ -1,6 +1,6 @@
 // index.js
 import http from "http";
-import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags } from "discord.js";
+import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags, StringSelectMenuBuilder } from "discord.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { askRace } from "./askRace.js";
@@ -362,8 +362,8 @@ if (interaction.isAutocomplete()) {
 
     /* ---------- CREATE ---------- */
 if (interaction.commandName === "create") {
- await interaction.deferReply({ fetchReply: true });
-
+await interaction.deferReply({ withResponse: true });
+  
   const name = interaction.options.getString("name");
   const image = interaction.options.getAttachment("image");
 
