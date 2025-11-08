@@ -229,30 +229,16 @@ client.on("interactionCreate", async (interaction) => {
 
 /* ---------- SELEZIONE RAZZA ---------- */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_race")) {
-  console.log("🔎 [DEBUG select_race] Entrato in blocco select_race");
-  console.log("🔎 [DEBUG select_race] customId ricevuto:", interaction.customId);
-  console.log("🔎 [DEBUG select_race] values ricevuti:", interaction.values);
-
   const parts = interaction.customId.split("_");
-  console.log("🔎 [DEBUG select_race] parts:", parts);
-
-  if (parts[0] !== "select" || parts[1] !== "race") {
-    console.log("⚠️ [DEBUG select_race] customId non corrisponde a select_race, esco");
-    return;
-  }
+  if (parts[0] !== "select" || parts[1] !== "race") return;
 
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
-  console.log("🔎 [DEBUG select_race] userId:", userId, "charName:", charName);
 
   const selectedRace = interaction.values[0];
-  console.log("🔎 [DEBUG select_race] Razza selezionata:", selectedRace);
-
   const char = await Character.findOne({ userId, name: charName });
-  console.log("🔎 [DEBUG select_race] Risultato query Character:", char);
 
   if (!char) {
-    console.log("❌ [DEBUG select_race] Personaggio non trovato in DB");
     await interaction.reply({
       content: "❌ Personaggio non trovato.",
       flags: MessageFlags.Ephemeral
@@ -262,20 +248,14 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Salva la razza
   char.race = selectedRace;
-  console.log("✅ [DEBUG select_race] Razza salvata su char:", char.race);
 
   // Aggiungi abilità iniziali
   const baseAbilities = raceAbilities[selectedRace] || [];
-  console.log("🔎 [DEBUG select_race] Abilità base trovate:", baseAbilities);
-
   if (!Array.isArray(char.abilita)) char.abilita = [];
   char.abilita.push(...baseAbilities);
-  console.log("✅ [DEBUG select_race] Abilità aggiornate:", char.abilita);
 
   // Caso speciale: Imp
   if (selectedRace === "imp") {
-    console.log("🔎 [DEBUG select_race] Razza Imp selezionata, costruisco menu abilità extra");
-
     const choiceMenu = new StringSelectMenuBuilder()
       .setCustomId(`select_imp_${interaction.user.id}_${encodeURIComponent(charName)}`)
       .setPlaceholder("Scegli un'abilità iniziale per Imp")
@@ -287,7 +267,6 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
     const row = new ActionRowBuilder().addComponents(choiceMenu);
 
-    console.log("🔎 [DEBUG select_race] Invio reply con menu Imp...");
     await interaction.reply({
       content: `✅ Razza selezionata: **Imp** per **${char.name}**.\nOra scegli un'abilità aggiuntiva:`,
       components: [row],
@@ -295,14 +274,11 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     });
 
     await char.save();
-    console.log("✅ [DEBUG select_race] Personaggio salvato con razza Imp");
     return;
   }
 
   await char.save();
-  console.log("✅ [DEBUG select_race] Personaggio salvato con razza:", selectedRace);
 
-  console.log("🔎 [DEBUG select_race] Invio update finale...");
   await interaction.update({
     content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
     components: [],
@@ -312,25 +288,14 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
 /* ---------- RAZZA IMP ---------- */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
-  console.log("🔎 [DEBUG select_imp] Entrato in blocco select_imp");
-  console.log("🔎 [DEBUG select_imp] customId:", interaction.customId);
-  console.log("🔎 [DEBUG select_imp] values:", interaction.values);
-
   const parts = interaction.customId.split("_");
-  console.log("🔎 [DEBUG select_imp] parts:", parts);
-
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
-  console.log("🔎 [DEBUG select_imp] userId:", userId, "charName:", charName);
 
   const selectedAbility = interaction.values[0];
-  console.log("🔎 [DEBUG select_imp] Ability scelta:", selectedAbility);
-
   const char = await Character.findOne({ userId, name: charName });
-  console.log("🔎 [DEBUG select_imp] Risultato query Character:", char);
 
   if (!char) {
-    console.log("❌ [DEBUG select_imp] Personaggio non trovato in DB");
     await interaction.reply({
       content: "❌ Personaggio non trovato.",
       flags: MessageFlags.Ephemeral
@@ -338,28 +303,21 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     return;
   }
 
-  console.log("✅ [DEBUG select_imp] Personaggio trovato:", char.name);
-
   const abilityMap = {
     armi_leggere: { nome: "Armi da Fuoco Leggere", descrizione: "Uso di pistole e revolver", livello: 1 },
     armi_pesanti: { nome: "Armi Pesanti", descrizione: "Uso di fucili e mitragliatrici infernali", livello: 1 },
     corpo_a_corpo: { nome: "Corpo a Corpo Urbano", descrizione: "Combattimento fisico ravvicinato", livello: 1 }
   };
 
-  console.log("🔎 [DEBUG select_imp] abilityMap definito:", abilityMap);
-
   char.abilita.push(abilityMap[selectedAbility]);
-  console.log("✅ [DEBUG select_imp] Abilità aggiunta:", abilityMap[selectedAbility]);
-
   await char.save();
-  console.log("✅ [DEBUG select_imp] Personaggio salvato con nuova abilità");
 
-  console.log("🔎 [DEBUG select_imp] Invio update finale...");
   await interaction.update({
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
     components: []
   });
 }
+
 
 
 
