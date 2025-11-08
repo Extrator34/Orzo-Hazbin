@@ -14,6 +14,21 @@ function createEmbed({ title, description, color = 0x0099ff }) {
   return { embeds: [{ title, description, color }] };
 }
 
+/* ======================= FUNZIONE STATS MENU ======================= */
+function buildStatMenu(statName, userId, charName, remainingPoints, statsLeft) {
+  // Calcola massimo assegnabile: non più di 10 e non più dei punti rimasti meno il minimo richiesto per le altre stats
+  const maxAssignable = Math.min(10, remainingPoints - (statsLeft - 1));
+  const options = [];
+  for (let i = 1; i <= maxAssignable; i++) {
+    options.push({ label: `${i}`, value: `${i}` });
+  }
+
+  return new StringSelectMenuBuilder()
+    .setCustomId(`select_stat_${statName}_${userId}_${encodeURIComponent(charName)}`)
+    .setPlaceholder(`Assegna punti a ${statName} (rimasti: ${remainingPoints})`)
+    .addOptions(options);
+}
+
 /* ======================= WEB SERVER KEEP-ALIVE (Render) ======================= */
 const PORT = process.env.PORT || 10000;
 const server = http.createServer((req, res) => {
@@ -65,7 +80,15 @@ const characterSchema = new mongoose.Schema({
       livello: { type: Number, min: 1, max: 3, default: 1 } // livello da 1 a 3
     }],
     default: []
-  }
+  },
+
+    stats: {
+    forza:       { type: Number, min: 1, max: 10, default: 1 },
+    destrezza:   { type: Number, min: 1, max: 10, default: 1 },
+    percezione:  { type: Number, min: 1, max: 10, default: 1 },
+    intelligenza:{ type: Number, min: 1, max: 10, default: 1 },
+    carisma
+    }
 });
 const Character = mongoose.model("Character", characterSchema);
 
@@ -363,9 +386,18 @@ if (selectedRace === "angelo_caduto") {
   return;
 }
 
-
-
   await char.save();
+
+  // Dopo aver scelto razza e abilità, avvia la distribuzione statistiche
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const row = new ActionRowBuilder().addComponents(statMenu);
+
+await interaction.followUp({
+  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+  components: [row],
+  flags: MessageFlags.Ephemeral
+});
+
 
   await interaction.update({
     content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
@@ -618,6 +650,129 @@ if (interaction.isStringSelectMenu() &&
     components: []
   });
 }
+
+/* ======================= SEZIONE STATS ======================= */
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_forza")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[3];
+  const charName = decodeURIComponent(parts.slice(4).join("_"));
+  const forza = parseInt(interaction.values[0]);
+
+  const char = await Character.findOne({ userId, name: charName });
+  if (!char) return;
+
+  char.stats.forza = forza;
+  await char.save();
+
+  const remaining = 20 - forza;
+  const menuDestrezza = buildStatMenu("destrezza", userId, charName, remaining, 4);
+  const row = new ActionRowBuilder().addComponents(menuDestrezza);
+
+  await interaction.update({
+    content: `✅ Forza assegnata: ${forza}\nOra scegli **Destrezza** (punti rimasti: ${remaining})`,
+    components: [row]
+  });
+}
+
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_destrezza")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[3];
+  const charName = decodeURIComponent(parts.slice(4).join("_"));
+  const destrezza = parseInt(interaction.values[0]);
+
+  const char = await Character.findOne({ userId, name: charName });
+  if (!char) return;
+
+  char.stats.destrezza = destrezza;
+  await char.save();
+
+  const used = char.stats.forza + destrezza;
+  const remaining = 20 - used;
+  const menuPercezione = buildStatMenu("percezione", userId, charName, remaining, 3);
+  const row = new ActionRowBuilder().addComponents(menuPercezione);
+
+  await interaction.update({
+    content: `✅ Destrezza assegnata: ${destrezza}\nOra scegli **Percezione** (punti rimasti: ${remaining})`,
+    components: [row]
+  });
+}
+
+
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_percezione")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[3];
+  const charName = decodeURIComponent(parts.slice(4).join("_"));
+  const percezione = parseInt(interaction.values[0]);
+
+  const char = await Character.findOne({ userId, name: charName });
+  if (!char) return;
+
+  char.stats.percezione = percezione;
+  await char.save();
+
+  const used = char.stats.forza + char.stats.destrezza + percezione;
+  const remaining = 20 - used;
+  const menuIntelligenza = buildStatMenu("intelligenza", userId, charName, remaining, 2);
+  const row = new ActionRowBuilder().addComponents(menuIntelligenza);
+
+  await interaction.update({
+    content: `✅ Percezione assegnata: ${percezione}\nOra scegli **Intelligenza** (punti rimasti: ${remaining})`,
+    components: [row]
+  });
+}
+
+
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_intelligenza")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[3];
+  const charName = decodeURIComponent(parts.slice(4).join("_"));
+  const intelligenza = parseInt(interaction.values[0]);
+
+  const char = await Character.findOne({ userId, name: charName });
+  if (!char) return;
+
+  char.stats.intelligenza = intelligenza;
+  await char.save();
+
+  const used = char.stats.forza + char.stats.destrezza + char.stats.percezione + intelligenza;
+  const remaining = 20 - used;
+  const menuCarisma = buildStatMenu("carisma", userId, charName, remaining, 1);
+  const row = new ActionRowBuilder().addComponents(menuCarisma);
+
+  await interaction.update({
+    content: `✅ Intelligenza assegnata: ${intelligenza}\nOra scegli **Carisma** (punti rimasti: ${remaining})`,
+    components: [row]
+  });
+}
+
+
+ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_carisma")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[3];
+  const charName = decodeURIComponent(parts.slice(4).join("_"));
+  const carisma = parseInt(interaction.values[0]);
+
+  const char = await Character.findOne({ userId, name: charName });
+  if (!char) return;
+
+  char.stats.carisma = carisma;
+  await char.save();
+
+  const totale = char.stats.forza + char.stats.destrezza + char.stats.percezione + char.stats.intelligenza + carisma;
+
+  await interaction.update({
+    content: `✅ Statistiche finali per **${char.name}**:\n
+    Forza: ${char.stats.forza}
+    Destrezza: ${char.stats.destrezza}
+    Percezione: ${char.stats.percezione}
+    Intelligenza: ${char.stats.intelligenza}
+    Carisma: ${char.stats.carisma}
+    Totale: ${totale}/20`,
+    components: []
+  });
+}
+   
+    
 
 
   /* ---------- Autocomplete ---------- */
