@@ -287,8 +287,7 @@ if (interaction.isStringSelectMenu()) {
 }
 
  /* ---------- RAZZA IMP ---------- */
-   // Gestione scelta extra per Imp
-if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
+  if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
   const parts = interaction.customId.split("_");
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
@@ -326,13 +325,15 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   char.abilita.push(abilityMap[selectedAbility]);
   await char.save();
 
+  // Rispondi correttamente all’interaction del menu
   await interaction.update({
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
-    components: [],
+    components: [], // rimuovo il menu
     flags: MessageFlags.Ephemeral
   });
   return;
 }
+
 
 
   /* ---------- Autocomplete ---------- */
