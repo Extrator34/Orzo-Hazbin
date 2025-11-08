@@ -87,7 +87,7 @@ const characterSchema = new mongoose.Schema({
     destrezza:   { type: Number, min: 1, max: 10, default: 1 },
     percezione:  { type: Number, min: 1, max: 10, default: 1 },
     intelligenza:{ type: Number, min: 1, max: 10, default: 1 },
-    carisma
+    carisma: { type: Number, min: 1, max: 10, default: 1 }
     }
 });
 const Character = mongoose.model("Character", characterSchema);
@@ -386,9 +386,15 @@ if (selectedRace === "angelo_caduto") {
   return;
 }
 
-  await char.save();
+ await char.save();
 
-  // Dopo aver scelto razza e abilità, avvia la distribuzione statistiche
+// Conferma razza scelta
+await interaction.update({
+  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
+  components: [],
+});
+
+// Avvia la distribuzione statistiche
 const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
 const row = new ActionRowBuilder().addComponents(statMenu);
 
@@ -398,12 +404,8 @@ await interaction.followUp({
   flags: MessageFlags.Ephemeral
 });
 
+return;
 
-  await interaction.update({
-    content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
-    components: [],
-  });
-  return;
 }
 
 /* ---------- RAZZA IMP ---------- */
