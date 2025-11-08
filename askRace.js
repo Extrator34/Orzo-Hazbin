@@ -1,5 +1,6 @@
 // askRace.js
 import { ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
+import { abilitaInfernali, abilitaCelestiali } from "./abilities.js";
 
 export async function askRace({ interaction, characterName }) {
   const raceOptions = [
