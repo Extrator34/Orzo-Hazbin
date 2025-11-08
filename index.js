@@ -228,7 +228,7 @@ client.on("interactionCreate", async (interaction) => {
   try {
 
 /* ---------- SELEZIONE RAZZA ---------- */
-if (interaction.isStringSelectMenu()) {
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_race")) {
   console.log("🔎 [DEBUG select_race] Entrato in blocco select_race");
   console.log("🔎 [DEBUG select_race] customId ricevuto:", interaction.customId);
   console.log("🔎 [DEBUG select_race] values ricevuti:", interaction.values);
