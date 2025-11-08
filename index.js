@@ -290,7 +290,7 @@ if (interaction.isAutocomplete()) {
 
     /* ---------- CREATE ---------- */
 if (interaction.commandName === "create") {
-  await interaction.deferReply();
+ await interaction.deferReply({ fetchReply: true });
 
   const name = interaction.options.getString("name");
   const image = interaction.options.getAttachment("image");
