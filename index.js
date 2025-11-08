@@ -288,14 +288,22 @@ if (interaction.isStringSelectMenu()) {
 
  /* ---------- RAZZA IMP ---------- */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
+  console.log("🔎 [DEBUG select_imp] Triggered menu Imp");
+  console.log("🔎 [DEBUG select_imp] customId:", interaction.customId);
+  console.log("🔎 [DEBUG select_imp] values:", interaction.values);
+
   const parts = interaction.customId.split("_");
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
+
+  console.log("🔎 [DEBUG select_imp] Parsed userId:", userId);
+  console.log("🔎 [DEBUG select_imp] Parsed charName:", charName);
 
   const selectedAbility = interaction.values[0];
   const char = await Character.findOne({ userId, name: charName });
 
   if (!char) {
+    console.log("❌ [DEBUG select_imp] Personaggio non trovato in DB");
     await interaction.reply({
       content: "❌ Personaggio non trovato.",
       flags: MessageFlags.Ephemeral
@@ -303,22 +311,27 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     return;
   }
 
+  console.log("✅ [DEBUG select_imp] Personaggio trovato:", char.name);
+
   const abilityMap = {
     armi_leggere: { nome: "Armi da Fuoco Leggere", descrizione: "Uso di pistole e revolver", livello: 1 },
     armi_pesanti: { nome: "Armi Pesanti", descrizione: "Uso di fucili e mitragliatrici infernali", livello: 1 },
     corpo_a_corpo: { nome: "Corpo a Corpo Urbano", descrizione: "Combattimento fisico ravvicinato", livello: 1 }
   };
 
+  console.log("🔎 [DEBUG select_imp] Ability selected:", selectedAbility);
+
   char.abilita.push(abilityMap[selectedAbility]);
   await char.save();
 
+  console.log("✅ [DEBUG select_imp] Ability saved:", abilityMap[selectedAbility]);
+
   await interaction.update({
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
-    components: [], // rimuovo il menu
+    components: [],
     flags: MessageFlags.Ephemeral
   });
 }
-
 
 
 
