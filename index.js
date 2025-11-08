@@ -363,7 +363,7 @@ if (interaction.isAutocomplete()) {
 
     /* ---------- CREATE ---------- */
 if (interaction.commandName === "create") {
-await interaction.deferReply({ withResponse: true });
+await interaction.deferReply();
   
   const name = interaction.options.getString("name");
   const image = interaction.options.getAttachment("image");
