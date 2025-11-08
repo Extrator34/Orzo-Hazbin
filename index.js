@@ -267,11 +267,11 @@ if (interaction.isStringSelectMenu()) {
 
     const row = new ActionRowBuilder().addComponents(choiceMenu);
 
-    await interaction.update({
-      content: `✅ Razza selezionata: **Imp** per **${char.name}**.\nOra scegli un'abilità aggiuntiva:`,
-      components: [row],
-      flags: MessageFlags.Ephemeral
-    });
+  await interaction.update({
+  content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
+  components: [] // rimuovo il menu
+});
+
     await char.save();
     return;
   }
