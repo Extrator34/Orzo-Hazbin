@@ -54,7 +54,15 @@ const characterSchema = new mongoose.Schema({
   expMostrata: { type: Number, default: 0 },
   race: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
-  vantaggi: { type: [{ nome: String, modificatore: Number }], default: [] }
+  
+  abilita: {
+    type: [{
+      nome: String,          // Nome abilità
+      descrizione: String,   // Descrizione (opzionale)
+      livello: { type: Number, min: 1, max: 3, default: 1 } // livello da 1 a 3
+    }],
+    default: []
+  }
 });
 const Character = mongoose.model("Character", characterSchema);
 
