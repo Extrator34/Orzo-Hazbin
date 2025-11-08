@@ -230,7 +230,7 @@ if (interaction.isStringSelectMenu()) {
   if (!char) {
     await interaction.reply({
       content: "❌ Personaggio non trovato.",
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
     return;
   }
@@ -538,7 +538,7 @@ await askRace({ interaction, characterName: name });
 
     /* ---------- DELETEPG ---------- */
     if (interaction.commandName === "deletepg") {
-      await interaction.deferReply({ ephemeral: true });
+     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const fromName = interaction.options.getString("from_name");
       const char = await Character.findOne({ userId: interaction.user.id, name: fromName });
