@@ -297,7 +297,6 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   return;
 }
 
-  // Caso speciale: Winner
 // Caso speciale: Winner
 if (selectedRace === "winner") {
   // Prima tendina (prime 25 abilità)
@@ -331,6 +330,38 @@ if (selectedRace === "winner") {
   return;
 }
 
+// Caso speciale: Angelo Caduto
+if (selectedRace === "angelo_caduto") {
+  // Filtra abilità celestiali escludendo "Volare"
+  const abilitaCelestialiFiltrate = abilitaCelestiali.filter(a => a.nome !== "Volare");
+
+  const choiceMenuCel = new StringSelectMenuBuilder()
+    .setCustomId(`select_caduto1_${interaction.user.id}_${encodeURIComponent(charName)}`)
+    .setPlaceholder("Scegli un'abilità celestiale (no Volare)")
+    .addOptions(
+      abilitaCelestialiFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
+    );
+
+  const rows = [new ActionRowBuilder().addComponents(choiceMenuCel)];
+  if (abilitaCelestialiFiltrate.length > 25) {
+    const choiceMenuCel2 = new StringSelectMenuBuilder()
+      .setCustomId(`select_caduto1b_${interaction.user.id}_${encodeURIComponent(charName)}`)
+      .setPlaceholder("Scegli un'abilità celestiale (extra)")
+      .addOptions(
+        abilitaCelestialiFiltrate.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+      );
+    rows.push(new ActionRowBuilder().addComponents(choiceMenuCel2));
+  }
+
+  await interaction.reply({
+    content: `✅ Razza selezionata: **Angelo Caduto** per **${char.name}**.\nOra scegli la **prima abilità celestiale** (Volare escluso):`,
+    components: rows,
+    flags: MessageFlags.Ephemeral
+  });
+
+  await char.save();
+  return;
+}
 
 
 
@@ -513,6 +544,80 @@ if (interaction.isStringSelectMenu() &&
 }
 
     
+/*-------------------- RAZZA ANGELO CADUTO  --------------------*/
+    if (interaction.isStringSelectMenu() && 
+   (interaction.customId.startsWith("select_caduto1") || interaction.customId.startsWith("select_caduto1b"))) {
+  
+  const parts = interaction.customId.split("_");
+  const userId = parts[2];
+  const charName = decodeURIComponent(parts.slice(3).join("_"));
+
+  const selectedCelAbility = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Salva abilità celestiale
+  const abilitaObjCel = abilitaCelestiali.find(a => a.nome === selectedCelAbility);
+  if (abilitaObjCel) char.abilita.push(abilitaObjCel);
+  await char.save();
+
+  // Filtra abilità infernali escludendo le tre vietate
+  const abilitaInfernaliFiltrate = abilitaInfernali.filter(a =>
+    !["Armi da Fuoco Leggere", "Armi Pesanti", "Corpo a Corpo Urbano"].includes(a.nome)
+  );
+
+  const choiceMenuInf = new StringSelectMenuBuilder()
+    .setCustomId(`select_caduto2_${interaction.user.id}_${encodeURIComponent(charName)}`)
+    .setPlaceholder("Scegli un'abilità infernale (alcune escluse)")
+    .addOptions(
+      abilitaInfernaliFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
+    );
+
+  const rows = [new ActionRowBuilder().addComponents(choiceMenuInf)];
+  if (abilitaInfernaliFiltrate.length > 25) {
+    const choiceMenuInf2 = new StringSelectMenuBuilder()
+      .setCustomId(`select_caduto2b_${interaction.user.id}_${encodeURIComponent(charName)}`)
+      .setPlaceholder("Scegli un'abilità infernale (extra)")
+      .addOptions(
+        abilitaInfernaliFiltrate.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+      );
+    rows.push(new ActionRowBuilder().addComponents(choiceMenuInf2));
+  }
+
+  await interaction.update({
+    content: `✅ Abilità celestiale selezionata: **${selectedCelAbility}**.\nOra scegli la **seconda abilità infernale** (alcune escluse):`,
+    components: rows
+  });
+}
+if (interaction.isStringSelectMenu() && 
+   (interaction.customId.startsWith("select_caduto2") || interaction.customId.startsWith("select_caduto2b"))) {
+  
+  const parts = interaction.customId.split("_");
+  const userId = parts[2];
+  const charName = decodeURIComponent(parts.slice(3).join("_"));
+
+  const selectedInfAbility = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Salva abilità infernale
+  const abilitaObjInf = abilitaInfernali.find(a => a.nome === selectedInfAbility);
+  if (abilitaObjInf) char.abilita.push(abilitaObjInf);
+  await char.save();
+
+  await interaction.update({
+    content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedInfAbility}`,
+    components: []
+  });
+}
 
 
   /* ---------- Autocomplete ---------- */
