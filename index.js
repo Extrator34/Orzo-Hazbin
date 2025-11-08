@@ -255,9 +255,8 @@ if (interaction.isStringSelectMenu()) {
   char.abilita.push(...baseAbilities);
 
   // Caso speciale: Imp → scelta tra tre abilità
- if (selectedRace === "imp") {
+if (selectedRace === "imp") {
   console.log("🔎 [DEBUG select_race] Razza Imp selezionata, costruisco menu abilità extra");
-  console.log("🔎 [DEBUG select_race] charName:", charName, "userId:", interaction.user.id);
 
   const choiceMenu = new StringSelectMenuBuilder()
     .setCustomId(`select_imp_${interaction.user.id}_${encodeURIComponent(charName)}`)
@@ -270,13 +269,17 @@ if (interaction.isStringSelectMenu()) {
 
   const row = new ActionRowBuilder().addComponents(choiceMenu);
 
-  await interaction.update({
+  // ⚠️ Usa reply, non update
+  await interaction.reply({
     content: `✅ Razza selezionata: **Imp** per **${char.name}**.\nOra scegli un'abilità aggiuntiva:`,
-    components: [row]
+    components: [row],
+    flags: MessageFlags.Ephemeral
   });
+
   await char.save();
   return;
 }
+
 
 
   await char.save();
