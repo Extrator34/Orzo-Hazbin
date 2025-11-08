@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { askRace } from "./askRace.js";
 import { abilitaInfernali, abilitaCelestiali } from "./abilities.js";
+import { raceAbilities } from "./raceAbilities.js";
+
 dotenv.config();
 
 /* ======================= FUNZIONE EMBED ======================= */
