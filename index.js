@@ -216,13 +216,14 @@ client.once(Events.ClientReady, () => {
 client.on("interactionCreate", async (interaction) => {
   try {
 
-   /* ---------- SELEZIONE RAZZA ---------- */
+/* ---------- SELEZIONE RAZZA ---------- */
 if (interaction.isStringSelectMenu()) {
-  const [prefix, userId, charName] = interaction.customId.split("_");
+  const parts = interaction.customId.split("_");
+  if (parts[0] !== "select" || parts[1] !== "race") return;
 
-  if (prefix !== "select") {
-    return;
-  }
+  const userId = parts[2];
+  // ricostruisco il nome decodificando
+  const charName = decodeURIComponent(parts.slice(3).join("_"));
 
   const selectedRace = interaction.values[0];
   const char = await Character.findOne({ userId, name: charName });
@@ -240,10 +241,12 @@ if (interaction.isStringSelectMenu()) {
 
   await interaction.update({
     content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
-    components: []
+    components: [],
+    flags: MessageFlags.Ephemeral
   });
   return;
 }
+
 
 
   /* ---------- Autocomplete ---------- */
