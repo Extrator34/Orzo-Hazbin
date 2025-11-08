@@ -326,10 +326,10 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   console.log("✅ [DEBUG select_imp] Ability saved:", abilityMap[selectedAbility]);
 
+  // ⚠️ Usa update SENZA flags, oppure reply con flags
   await interaction.update({
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
-    components: [],
-    flags: MessageFlags.Ephemeral
+    components: [] // rimuovo il menu
   });
 }
 
