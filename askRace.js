@@ -1,5 +1,5 @@
 // askRace.js
-import { ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
+import { ActionRowBuilder, StringSelectMenuBuilder, MessageFlags  } from "discord.js";
 
 export async function askRace({ interaction, characterName }) {
   const raceOptions = [
@@ -23,6 +23,6 @@ export async function askRace({ interaction, characterName }) {
   await interaction.followUp({
     content: `🧬 <@${interaction.user.id}>, scegli la razza per **${characterName}**:`,
     components: [row],
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
 }
