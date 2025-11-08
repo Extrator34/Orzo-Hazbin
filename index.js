@@ -298,25 +298,39 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 }
 
   // Caso speciale: Winner
+// Caso speciale: Winner
 if (selectedRace === "winner") {
+  // Prima tendina (prime 25 abilità)
   const choiceMenu1 = new StringSelectMenuBuilder()
     .setCustomId(`select_winner1_${interaction.user.id}_${encodeURIComponent(charName)}`)
-    .setPlaceholder("Scegli la prima abilità da Winner")
+    .setPlaceholder("Scegli la prima abilità da Winner (1-25)")
     .addOptions(
-      abilitaCelestiali.map(a => ({ label: a.nome, value: a.nome }))
+      abilitaCelestiali.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
     );
 
-  const row1 = new ActionRowBuilder().addComponents(choiceMenu1);
+  // Seconda tendina (resto delle abilità, se presenti)
+  const choiceMenu2 = new StringSelectMenuBuilder()
+    .setCustomId(`select_winner1b_${interaction.user.id}_${encodeURIComponent(charName)}`)
+    .setPlaceholder("Scegli la prima abilità da Winner (26+)")
+    .addOptions(
+      abilitaCelestiali.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+    );
+
+  const rows = [new ActionRowBuilder().addComponents(choiceMenu1)];
+  if (abilitaCelestiali.length > 25) {
+    rows.push(new ActionRowBuilder().addComponents(choiceMenu2));
+  }
 
   await interaction.reply({
     content: `✅ Razza selezionata: **Winner** per **${char.name}**.\nOra scegli la **prima abilità celestiale**:`,
-    components: [row1],
+    components: rows,
     flags: MessageFlags.Ephemeral
   });
 
   await char.save();
   return;
 }
+
 
 
 
@@ -426,7 +440,9 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
       /* ---------- RAZZA WINNER ---------- */
     
-if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_winner1")) {
+if (interaction.isStringSelectMenu() && 
+   (interaction.customId.startsWith("select_winner1") || interaction.customId.startsWith("select_winner1b"))) {
+  
   const parts = interaction.customId.split("_");
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
@@ -444,25 +460,35 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   if (abilitaObj1) char.abilita.push(abilitaObj1);
   await char.save();
 
-  // Filtra la lista escludendo la prima abilità scelta
+  // Filtra la lista escludendo la prima scelta
   const abilitaFiltrate = abilitaCelestiali.filter(a => a.nome !== selectedAbility1);
 
   const choiceMenu2 = new StringSelectMenuBuilder()
     .setCustomId(`select_winner2_${interaction.user.id}_${encodeURIComponent(charName)}`)
     .setPlaceholder("Scegli la seconda abilità da Winner")
     .addOptions(
-      abilitaFiltrate.map(a => ({ label: a.nome, value: a.nome }))
+      abilitaFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
     );
 
-  const row2 = new ActionRowBuilder().addComponents(choiceMenu2);
+  const rows = [new ActionRowBuilder().addComponents(choiceMenu2)];
+  if (abilitaFiltrate.length > 25) {
+    const choiceMenu2b = new StringSelectMenuBuilder()
+      .setCustomId(`select_winner2b_${interaction.user.id}_${encodeURIComponent(charName)}`)
+      .setPlaceholder("Scegli la seconda abilità da Winner (26+)")
+      .addOptions(
+        abilitaFiltrate.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+      );
+    rows.push(new ActionRowBuilder().addComponents(choiceMenu2b));
+  }
 
   await interaction.update({
     content: `✅ Prima abilità celestiale selezionata: **${selectedAbility1}**.\nOra scegli la **seconda abilità**:`,
-    components: [row2]
+    components: rows
   });
 }
-
-    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_winner2")) {
+if (interaction.isStringSelectMenu() && 
+   (interaction.customId.startsWith("select_winner2") || interaction.customId.startsWith("select_winner2b"))) {
+  
   const parts = interaction.customId.split("_");
   const userId = parts[2];
   const charName = decodeURIComponent(parts.slice(3).join("_"));
@@ -485,6 +511,8 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     components: []
   });
 }
+
+    
 
 
   /* ---------- Autocomplete ---------- */
