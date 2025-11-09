@@ -1475,6 +1475,7 @@ if (char.race) {
       { name: "😈 Infamia", value: `${infamy}😈`, inline: true },
       { name: "🧬 Razza", value: raceText, inline: true },
       { name: "✨ Abilità", value: abilitaText, inline: false },
+      { name: "🌟 Abilità Innata", value: `${char.lvlInnata || 1}`, inline: true },
       { name: "📊 Statistiche", value: statsText, inline: false }
     ],
     image: { url: char.image || null },
