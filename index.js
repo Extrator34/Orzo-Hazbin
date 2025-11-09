@@ -1412,16 +1412,32 @@ if (interaction.commandName === "show") {
         .join("\n ")
     : "Nessuno";
 
+  // Razza
+  const raceText = char.race ? char.race : "Non assegnata";
+
+  // Abilità
+  const abilitaText = char.abilita?.length
+    ? char.abilita.map(a => `• ${a.nome} (lvl ${a.livello})`).join("\n")
+    : "Nessuna";
+
+  // Stats
+  const statsText = char.stats
+    ? `Forza: ${char.stats.forza}\nDestrezza: ${char.stats.destrezza}\nPercezione: ${char.stats.percezione}\nIntelligenza: ${char.stats.intelligenza}\nCarisma: ${char.stats.carisma}`
+    : "Non assegnate";
+
   // Embed finale
   const embed = {
     title: `📄 ${char.name}`,
     color,
     fields: [
-      { name: "📈 Livello", value: `${livello}\n`, inline: true },
-      { name: "📊 Avanzamento infamia", value: `${infamyBar}\n`, inline: false },
-      { name: "💰 Soldi", value: `${char.money}💰\n`, inline: true },
-      { name: "😈 Infamia", value: `${infamy}😈\n`, inline: true },
-      { name: "🎯 Vantaggi", value: `${vantaggiText}`, inline: false }
+      { name: "📈 Livello", value: `${livello}`, inline: true },
+      { name: "📊 Avanzamento infamia", value: `${infamyBar}`, inline: false },
+      { name: "💰 Soldi", value: `${char.money}💰`, inline: true },
+      { name: "😈 Infamia", value: `${infamy}😈`, inline: true },
+      { name: "🎯 Vantaggi", value: vantaggiText, inline: false },
+      { name: "🧬 Razza", value: raceText, inline: true },
+      { name: "✨ Abilità", value: abilitaText, inline: false },
+      { name: "📊 Statistiche", value: statsText, inline: false }
     ],
     image: { url: char.image || null },
     footer: { text: `Creato da ${targetUser.username}` }
@@ -1430,6 +1446,7 @@ if (interaction.commandName === "show") {
   await interaction.editReply({ embeds: [embed] });
   return;
 }
+
 
 
     /* ---------- HELP ---------- */
