@@ -1494,21 +1494,26 @@ if (interaction.commandName === "help") {
 
   const isAdmin = interaction.member.roles.cache.has(ADMIN_ROLE_ID);
 
-  const userCommands = [
-    "`/create` – Crea un nuovo personaggio",
-    "`/show` – Mostra la scheda di un personaggio",
-    "`/list` – Mostra la lista dei personaggi",
-    "`/rename` – Rinomina un tuo personaggio",
-    "`/changeimage` – modifica l'immagine di un tuo personaggio",
-    "`/deletepg` – Elimina uno dei tuoi personaggi",
-    "`/pay` – Paga un altro personaggio",
-  ];
+ const userCommands = [
+  "`/create` – Crea un nuovo personaggio",
+  "`/show` – Mostra la scheda di un personaggio",
+  "`/list` – Mostra la lista dei personaggi",
+  "`/rename` – Rinomina un tuo personaggio",
+  "`/changeimage` – Modifica l'immagine di un tuo personaggio",
+  "`/deletepg` – Elimina uno dei tuoi personaggi",
+  "`/pay` – Paga un altro personaggio",
+  "`/daily` – Claim giornaliero: ottieni 100💰 per ogni tuo personaggio",
+  "`/levelup` – Spendi 1000 punti infamia per far salire di livello un tuo personaggio",
+  "`/help` – Mostra la lista dei comandi disponibili"
+];
 
-  const adminCommands = [
-    "`/modifymoney` – Aggiungi o rimuovi soldi",
-    "`/advantage` – Aggiungi vantaggio",
-    "`/removeadvantage` – Rimuovi vantaggio"
-  ];
+ const adminCommands = [
+  "`/modifymoney` – Aggiungi o rimuovi soldi ad un personaggio",
+  "`/modifyinnata` – Modifica il livello innato di un personaggio",
+  "`/modifyinfamy` – Aggiungi o rimuovi punti infamia ad un personaggio",
+  "`/addability` – Aggiungi o incrementa un'abilità a un personaggio",
+  "`/removeability` – Rimuovi o decrementa un'abilità da un personaggio"
+];
 
   const embed = {
     title: "📘 Comandi disponibili",
