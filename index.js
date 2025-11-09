@@ -713,124 +713,117 @@ const TOTAL_STAT_POINTS = 25;
 if (interaction.isChatInputCommand() && interaction.commandName === "addability") {
   // Controllo permessi admin
   if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    await interaction.editReply("❌ Non hai i permessi per usare questo comando.");
     return;
   }
+
+  // Defer subito: evita timeout
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const toUser = interaction.options.getUser("to_user");
   const toName = interaction.options.getString("to_name");
 
   const char = await Character.findOne({ userId: toUser.id, name: toName });
   if (!char) {
-    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    await interaction.editReply("❌ Personaggio non trovato.");
     return;
   }
 
-  // Costruisci lista abilità (unisci infernali + celestiali)
- // Costruisci lista abilità separata
-const infernali = abilitaInfernali;
-const celestiali = abilitaCelestiali;
+  const infernali = abilitaInfernali;
+  const celestiali = abilitaCelestiali;
+  const rows = [];
 
-const rows = [];
+  // Menù abilità infernali
+  for (let i = 0; i < infernali.length; i += 25) {
+    const chunk = infernali.slice(i, i + 25);
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId(`select_addability_inferno_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
+      .setPlaceholder("😈 Abilità infernali")
+      .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+    rows.push(new ActionRowBuilder().addComponents(menu));
+  }
 
-// Menù abilità infernali
-for (let i = 0; i < infernali.length; i += 25) {
-  const chunk = infernali.slice(i, i + 25);
-  const menu = new StringSelectMenuBuilder()
-    .setCustomId(`select_addability_inferno_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
-    .setPlaceholder("😈 Abilità infernali")
-    .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+  // Menù abilità celestiali
+  for (let i = 0; i < celestiali.length; i += 25) {
+    const chunk = celestiali.slice(i, i + 25);
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId(`select_addability_celestiale_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
+      .setPlaceholder("✨ Abilità celestiali")
+      .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+    rows.push(new ActionRowBuilder().addComponents(menu));
+  }
 
-  rows.push(new ActionRowBuilder().addComponents(menu));
-}
-
-// Menù abilità celestiali
-for (let i = 0; i < celestiali.length; i += 25) {
-  const chunk = celestiali.slice(i, i + 25);
-  const menu = new StringSelectMenuBuilder()
-    .setCustomId(`select_addability_celestiale_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
-    .setPlaceholder("✨ Abilità celestiali")
-    .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
-
-  rows.push(new ActionRowBuilder().addComponents(menu));
-}
-
-await interaction.reply({
-  content: `📜 Seleziona un'abilità da aggiungere o incrementare per **${char.name}**:`,
-  components: rows,
-  flags: MessageFlags.Ephemeral
-});
-
+  await interaction.editReply({
+    content: `📜 Seleziona un'abilità da aggiungere o incrementare per **${char.name}**:`,
+    components: rows
+  });
+  return;
 }
 
 
-    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_addability")) {
+/* ---------- ADDABILITY MENU HANDLER ---------- */
+if (interaction.isStringSelectMenu() &&
+   (interaction.customId.startsWith("select_addability_inferno") ||
+    interaction.customId.startsWith("select_addability_celestiale"))) {
+
   const parts = interaction.customId.split("_");
-  const userId = parts[2];
-  const charName = decodeURIComponent(parts[3]);
+  const creatorId = parts[3];
+  const charName = decodeURIComponent(parts[4]);
+
+  // Solo chi ha aperto il menu può usarlo
+  if (interaction.user.id !== creatorId) {
+    await interaction.reply({ content: "⛔ Non puoi usare questo menù.", flags: MessageFlags.Ephemeral });
+    return;
+  }
 
   const selectedAbility = interaction.values[0];
-  const char = await Character.findOne({ userId, name: charName });
+  const char = await Character.findOne({ userId: creatorId, name: charName });
   if (!char) {
     await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
     return;
   }
 
-  // Cerca abilità nella lista
-  const abilitaObj = [...abilitaInfernali, ...abilitaCelestiali].find(a => a.nome === selectedAbility);
+  // Scegli la lista corretta
+  const pool = interaction.customId.includes("inferno") ? abilitaInfernali : abilitaCelestiali;
+  const abilitaObj = pool.find(a => a.nome === selectedAbility);
   if (!abilitaObj) {
     await interaction.reply({ content: "❌ Abilità non trovata.", flags: MessageFlags.Ephemeral });
     return;
   }
 
-  // Controlla se già presente
   const existing = char.abilita.find(a => a.nome === selectedAbility);
 
-if (existing) {
-  if (existing.livello < 3) {
-    existing.livello += 1;
-    await char.save();
-
-    // aggiorna il messaggio originale
-    await interaction.update({
-      content: `✅ Abilità **${selectedAbility}** di **${char.name}** incrementata a livello ${existing.livello}.`,
-      components: []
-    });
-
-    // opzionale: messaggio extra
-    await interaction.followUp({
-      content: `📜 Log: abilità incrementata`,
-      flags: MessageFlags.Ephemeral
-    });
-
+  if (existing) {
+    if (existing.livello < 3) {
+      existing.livello += 1;
+      await char.save();
+      await interaction.update({
+        content: `✅ Abilità **${selectedAbility}** di **${char.name}** incrementata a livello ${existing.livello}.`,
+        components: []
+      });
+      return;
+    } else {
+      await interaction.update({
+        content: `⚠️ Abilità **${selectedAbility}** di **${char.name}** è già al livello massimo (3).`,
+        components: []
+      });
+      return;
+    }
   } else {
+    char.abilita.push({
+      nome: abilitaObj.nome,
+      descrizione: abilitaObj.descrizione || "",
+      livello: 1
+    });
+    await char.save();
     await interaction.update({
-      content: `⚠️ Abilità **${selectedAbility}** di **${char.name}** è già al livello massimo (3).`,
+      content: `✅ Abilità **${selectedAbility}** aggiunta a **${char.name}** (livello 1).`,
       components: []
     });
+    return;
   }
-} else {
-  char.abilita.push({
-    nome: abilitaObj.nome,
-    descrizione: abilitaObj.descrizione || "",
-    livello: 1
-  });
-  await char.save();
-
-  await interaction.update({
-    content: `✅ Abilità **${selectedAbility}** aggiunta a **${char.name}** (livello 1).`,
-    components: []
-  });
-
-  // opzionale: messaggio extra
-  await interaction.followUp({
-    content: `📜 Log: nuova abilità aggiunta`,
-    flags: MessageFlags.Ephemeral
-  });
 }
-}
-
-
 
 
     
