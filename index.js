@@ -771,32 +771,48 @@ if (interaction.isChatInputCommand() && interaction.commandName === "addability"
   // Controlla se già presente
   const existing = char.abilita.find(a => a.nome === selectedAbility);
 
-  if (existing) {
-    if (existing.livello < 3) {
-      existing.livello += 1;
-      await char.save();
-      await interaction.update({
-        content: `✅ Abilità **${selectedAbility}** di **${char.name}** incrementata a livello ${existing.livello}.`,
-        components: []
-      });
-    } else {
-      await interaction.update({
-        content: `⚠️ Abilità **${selectedAbility}** di **${char.name}** è già al livello massimo (3).`,
-        components: []
-      });
-    }
-  } else {
-    char.abilita.push({
-      nome: abilitaObj.nome,
-      descrizione: abilitaObj.descrizione || "",
-      livello: 1
-    });
+if (existing) {
+  if (existing.livello < 3) {
+    existing.livello += 1;
     await char.save();
+
+    // aggiorna il messaggio originale
     await interaction.update({
-      content: `✅ Abilità **${selectedAbility}** aggiunta a **${char.name}** (livello 1).`,
+      content: `✅ Abilità **${selectedAbility}** di **${char.name}** incrementata a livello ${existing.livello}.`,
+      components: []
+    });
+
+    // opzionale: messaggio extra
+    await interaction.followUp({
+      content: `📜 Log: abilità incrementata`,
+      flags: MessageFlags.Ephemeral
+    });
+
+  } else {
+    await interaction.update({
+      content: `⚠️ Abilità **${selectedAbility}** di **${char.name}** è già al livello massimo (3).`,
       components: []
     });
   }
+} else {
+  char.abilita.push({
+    nome: abilitaObj.nome,
+    descrizione: abilitaObj.descrizione || "",
+    livello: 1
+  });
+  await char.save();
+
+  await interaction.update({
+    content: `✅ Abilità **${selectedAbility}** aggiunta a **${char.name}** (livello 1).`,
+    components: []
+  });
+
+  // opzionale: messaggio extra
+  await interaction.followUp({
+    content: `📜 Log: nuova abilità aggiunta`,
+    flags: MessageFlags.Ephemeral
+  });
+}
 }
 
 
