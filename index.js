@@ -217,12 +217,11 @@ const commands = [
   ],
 },
 {
-  name: "modifyinnata",
-  description: "(ADMIN ONLY) Modifica il livello innato di un personaggio",
+  name: "addability",
+  description: "(ADMIN ONLY) Aggiungi o incrementa un'abilità a un personaggio",
   options: [
     { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
-    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
-    { name: "amount", type: 4, description: "Valore da aggiungere o togliere (può essere negativo)", required: true }
+    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true }
   ]
 }
 ];
