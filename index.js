@@ -221,7 +221,8 @@ const commands = [
   description: "(ADMIN ONLY) Aggiungi o incrementa un'abilità a un personaggio",
   options: [
     { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
-    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true }
+    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
+    { name: "ability", type: 3, description: "Nome dell'abilità da aggiungere", required: true, autocomplete: true }
   ]
 }
 ];
