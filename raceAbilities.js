@@ -27,6 +27,7 @@ export const raceAbilities = {
   ],
   cherubino: [
     { nome: "Volare", descrizione: "Saper usare le ali", livello: 1 },
-    { nome: "Corpo a Corpo Sacro", descrizione: "Difesa fisica con tecniche armoniose", livello: 1 }
+    { nome: "Tecnologia Sacra", descrizione: "Usare e armonizzare strumenti celestiali", livello: 1 },
+    { nome: "Lavoro Angelico", descrizione: "Operare in comunità celesti con dedizione", livello: 1 }
   ]
 };
