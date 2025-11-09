@@ -395,14 +395,16 @@ await interaction.update({
 });
 
 // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
-
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
-});
+if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
+  // Avvia stats qui solo per razze normali
+  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+  const row = new ActionRowBuilder().addComponents(statMenu);
+  await interaction.followUp({
+    content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+    components: [row],
+    flags: MessageFlags.Ephemeral
+  });
+}
 
 return;
 
@@ -416,7 +418,14 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   const selectedAbility = interaction.values[0];
   const char = await Character.findOne({ userId, name: charName });
-  if (!char) return;
+
+  if (!char) {
+    await interaction.reply({
+      content: "❌ Personaggio non trovato.",
+      flags: MessageFlags.Ephemeral
+    });
+    return;
+  }
 
   const abilityMap = {
     armi_leggere: { nome: "Armi da Fuoco Leggere", descrizione: "Uso di pistole e revolver", livello: 1 },
@@ -431,15 +440,16 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
     components: []
   });
+  // Avvia la distribuzione statistiche
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const row = new ActionRowBuilder().addComponents(statMenu);
 
-  // Avvia stats
-  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
-  const row = new ActionRowBuilder().addComponents(statMenu);
-  await interaction.followUp({
-    content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-    components: [row],
-    flags: MessageFlags.Ephemeral
-  });
+await interaction.followUp({
+  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+  components: [row],
+  flags: MessageFlags.Ephemeral
+});
+
 }
 
 
