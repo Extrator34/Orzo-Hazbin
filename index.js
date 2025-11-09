@@ -70,6 +70,7 @@ const characterSchema = new mongoose.Schema({
   level: { type: Number, default: 1 },
   expTotale: { type: Number, default: 0 },
   expMostrata: { type: Number, default: 0 },
+  statsAssigned: { type: Boolean, default: false },
   race: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   
@@ -300,6 +301,8 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     return;
   }
 
+  
+// Caso speciale: peccatore
   if (selectedRace === "peccatore") {
   const choiceMenu1 = new StringSelectMenuBuilder()
     .setCustomId(`select_peccatore1_${interaction.user.id}_${encodeURIComponent(charName)}`)
@@ -505,26 +508,31 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     return;
   }
 
-  // Salva la seconda abilità
-  const abilitaObj2 = abilitaInfernali.find(a => a.nome === selectedAbility2);
-  if (abilitaObj2) char.abilita.push(abilitaObj2);
-  await char.save();
+// Salva la seconda abilità
+const abilitaObj2 = abilitaInfernali.find(a => a.nome === selectedAbility2);
+if (abilitaObj2) char.abilita.push(abilitaObj2);
+await char.save();
 
-  await interaction.update({
-    content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
-    components: []
-  });
-      // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
-
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
+await interaction.update({
+  content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
+  components: []
 });
 
+// Avvia la distribuzione statistiche SOLO se non già avviata
+if (!char.statsAssigned) {
+  char.statsAssigned = true;
+  await char.save();
+
+  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+  const row = new ActionRowBuilder().addComponents(statMenu);
+
+  await interaction.followUp({
+    content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+    components: [row],
+    flags: MessageFlags.Ephemeral
+  });
 }
+
 
       /* ---------- RAZZA WINNER ---------- */
     
@@ -589,26 +597,31 @@ if (interaction.isStringSelectMenu() &&
     return;
   }
 
-  // Salva la seconda abilità
-  const abilitaObj2 = abilitaCelestiali.find(a => a.nome === selectedAbility2);
-  if (abilitaObj2) char.abilita.push(abilitaObj2);
-  await char.save();
+// Salva la seconda abilità
+const abilitaObj2 = abilitaCelestiali.find(a => a.nome === selectedAbility2);
+if (abilitaObj2) char.abilita.push(abilitaObj2);
+await char.save();
 
-  await interaction.update({
-    content: `✅ Abilità celestiali selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
-    components: []
-  });
-  // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
-
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
+await interaction.update({
+  content: `✅ Abilità celestiali selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
+  components: []
 });
 
+// Avvia la distribuzione statistiche SOLO se non già avviata
+if (!char.statsAssigned) {
+  char.statsAssigned = true;
+  await char.save();
+
+  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+  const row = new ActionRowBuilder().addComponents(statMenu);
+
+  await interaction.followUp({
+    content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+    components: [row],
+    flags: MessageFlags.Ephemeral
+  });
 }
+
 
     
 /*-------------------- RAZZA ANGELO CADUTO  --------------------*/
@@ -684,7 +697,24 @@ if (interaction.isStringSelectMenu() &&
     content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedInfAbility}`,
     components: []
   });
+
+  // Avvia la distribuzione statistiche SOLO se non già avviata
+  if (!char.statsAssigned) {
+    char.statsAssigned = true;
+    await char.save();
+
+    const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+    const row = new ActionRowBuilder().addComponents(statMenu);
+
+    await interaction.followUp({
+      content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+      components: [row],
+      flags: MessageFlags.Ephemeral
+    });
+  }
 }
+
+  
 
 /* ======================= SEZIONE STATS ======================= */
     if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_forza")) {
@@ -805,15 +835,6 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     Totale: ${totale}/20`,
     components: []
   });
-   // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
-
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
-});
 
 }
    
