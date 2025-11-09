@@ -1640,7 +1640,7 @@ if (interaction.commandName === "changeimage") {
     return;
   }
 
-  const mediaChannelId = "1272793692301819926"; // ← ID del canale media
+  const mediaChannelId = "778383958135930924"; // ← ID del canale media
   const mediaChannel = client.channels.cache.get(mediaChannelId);
 
   if (!mediaChannel || !mediaChannel.isTextBased()) {
