@@ -1416,6 +1416,20 @@ if (interaction.commandName === "show") {
   angelo_caduto: 0x000000 
 };
 
+   const raceThumbnails = {
+  bafometto: "https://i.postimg.cc/bYTt4r9m/Accidia.png",
+  hellhound: "https://i.postimg.cc/63VvWpJ5/Gola.png",
+  infestatore: "https://i.postimg.cc/JR7q7Vyy/Invidia.png",
+  imp: "https://i.postimg.cc/h4qLHHWt/Ira.png",
+  succube: "https://i.postimg.cc/NsX8CQnn/Lussuria.png",
+  peccatore: "https://i.postimg.cc/fMHvJ2X8/Superbia.png",
+  winner: "https://i.postimg.cc/RVGGnNGS/Winner.png",
+  cherubino: "https://i.postimg.cc/WNJ9fppg/Cherubini.png",
+  angelo_caduto: "https://i.postimg.cc/nFQdwVV7/Angeli-caduti.png"
+};
+const raceKey = char.race?.toLowerCase().replace(/ /g, "_");
+const thumbnailUrl = raceThumbnails[raceKey] || null;
+
 
 // Colore embed basato sulla razza
 let color = 0x808080; // default grigio
@@ -1459,13 +1473,12 @@ if (char.race) {
       { name: "📊 Avanzamento infamia", value: `${infamyBar}`, inline: false },
       { name: "💰 Soldi", value: `${char.money}💰`, inline: true },
       { name: "😈 Infamia", value: `${infamy}😈`, inline: true },
-      { name: "🎯 Vantaggi", value: vantaggiText, inline: false },
       { name: "🧬 Razza", value: raceText, inline: true },
       { name: "✨ Abilità", value: abilitaText, inline: false },
       { name: "📊 Statistiche", value: statsText, inline: false }
     ],
     image: { url: char.image || null },
-   
+    thumbnail: { url: thumbnailUrl },
     footer: { text: `Creato da ${targetUser.username}` }
   };
 
