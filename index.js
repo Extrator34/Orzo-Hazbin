@@ -727,25 +727,40 @@ if (interaction.isChatInputCommand() && interaction.commandName === "addability"
   }
 
   // Costruisci lista abilità (unisci infernali + celestiali)
-  const allAbilities = [...abilitaInfernali, ...abilitaCelestiali];
+ // Costruisci lista abilità separata
+const infernali = abilitaInfernali;
+const celestiali = abilitaCelestiali;
 
-  // Spezza in blocchi da max 25
-  const rows = [];
-  for (let i = 0; i < allAbilities.length; i += 25) {
-    const chunk = allAbilities.slice(i, i + 25);
-    const menu = new StringSelectMenuBuilder()
-      .setCustomId(`select_addability_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
-      .setPlaceholder(`Scegli abilità (${i + 1}-${i + chunk.length})`)
-      .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+const rows = [];
 
-    rows.push(new ActionRowBuilder().addComponents(menu));
-  }
+// Menù abilità infernali
+for (let i = 0; i < infernali.length; i += 25) {
+  const chunk = infernali.slice(i, i + 25);
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId(`select_addability_inferno_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
+    .setPlaceholder("😈 Abilità infernali")
+    .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
 
-  await interaction.reply({
-    content: `📜 Seleziona un'abilità da aggiungere o incrementare per **${char.name}**:`,
-    components: rows,
-    flags: MessageFlags.Ephemeral
-  });
+  rows.push(new ActionRowBuilder().addComponents(menu));
+}
+
+// Menù abilità celestiali
+for (let i = 0; i < celestiali.length; i += 25) {
+  const chunk = celestiali.slice(i, i + 25);
+  const menu = new StringSelectMenuBuilder()
+    .setCustomId(`select_addability_celestiale_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
+    .setPlaceholder("✨ Abilità celestiali")
+    .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+
+  rows.push(new ActionRowBuilder().addComponents(menu));
+}
+
+await interaction.reply({
+  content: `📜 Seleziona un'abilità da aggiungere o incrementare per **${char.name}**:`,
+  components: rows,
+  flags: MessageFlags.Ephemeral
+});
+
 }
 
 
