@@ -805,15 +805,6 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     Totale: ${totale}/20`,
     components: []
   });
-   // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
-
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
-});
 
 }
    
