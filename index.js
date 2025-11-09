@@ -70,6 +70,7 @@ const characterSchema = new mongoose.Schema({
   level: { type: Number, default: 1 },
   expTotale: { type: Number, default: 0 },
   expMostrata: { type: Number, default: 0 },
+  lvlInnata: { type: Number, min: 1, max: 5, default: 1 },
   race: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   
@@ -161,6 +162,15 @@ const commands = [
       { name: "name", type: 3, description: "Nuovo nome del personaggio", required: true },
     ],
   },
+  {
+  name: "modifyinnata",
+  description: "(ADMIN ONLY) Modifica il livello innato di un personaggio",
+  options: [
+    { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
+    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
+    { name: "amount", type: 4, description: "Valore da aggiungere o togliere (può essere negativo)", required: true }
+  ]
+},
   {
     name: "deletepg",
     description: "Elimina uno dei tuoi personaggi",
@@ -1486,6 +1496,37 @@ if (interaction.commandName === "levelup") {
   }));
   return;
 }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === "modifyinnata") {
+  // Controllo permessi admin
+  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const toUser = interaction.options.getUser("to_user");
+  const toName = interaction.options.getString("to_name");
+  const amount = interaction.options.getInteger("amount");
+
+  const char = await Character.findOne({ userId: toUser.id, name: toName });
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Aggiorna lvlInnata
+  let newLvl = (char.lvlInnata || 1) + amount;
+  if (newLvl < 1) newLvl = 1;
+  if (newLvl > 5) newLvl = 5;
+
+  char.lvlInnata = newLvl;
+  await char.save();
+
+  await interaction.reply({
+    content: `✅ lvlInnata di **${char.name}** aggiornato a **${newLvl}** (modifica: ${amount >= 0 ? "+" : ""}${amount})`
+  });
+}
+
 
 
     /* ---------- CHANGEIMAGE ---------- */
