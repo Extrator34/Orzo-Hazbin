@@ -1479,7 +1479,7 @@ if (interaction.commandName === "help") {
 /* ---------- DAILY ---------- */
 if (interaction.commandName === "daily") {
   // Risposta ephemeral con i flag
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  await interaction.deferReply();
 
   const userId = interaction.user.id;
   const chars = await Character.find({ userId });
