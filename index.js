@@ -702,8 +702,11 @@ if (interaction.isStringSelectMenu() &&
 }
 
 
+// Definisci una costante globale all'inizio del file
+const TOTAL_STAT_POINTS = 25;
+
 /* ======================= SEZIONE STATS ======================= */
-    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_forza")) {
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_forza")) {
   const parts = interaction.customId.split("_");
   const userId = parts[3];
   const charName = decodeURIComponent(parts.slice(4).join("_"));
@@ -715,7 +718,7 @@ if (interaction.isStringSelectMenu() &&
   char.stats.forza = forza;
   await char.save();
 
-  const remaining = 20 - forza;
+  const remaining = TOTAL_STAT_POINTS - forza;
   const menuDestrezza = buildStatMenu("destrezza", userId, charName, remaining, 4);
   const row = new ActionRowBuilder().addComponents(menuDestrezza);
 
@@ -738,7 +741,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   await char.save();
 
   const used = char.stats.forza + destrezza;
-  const remaining = 20 - used;
+  const remaining = TOTAL_STAT_POINTS - used;
   const menuPercezione = buildStatMenu("percezione", userId, charName, remaining, 3);
   const row = new ActionRowBuilder().addComponents(menuPercezione);
 
@@ -747,7 +750,6 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     components: [row]
   });
 }
-
 
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_percezione")) {
   const parts = interaction.customId.split("_");
@@ -762,7 +764,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   await char.save();
 
   const used = char.stats.forza + char.stats.destrezza + percezione;
-  const remaining = 20 - used;
+  const remaining = TOTAL_STAT_POINTS - used;
   const menuIntelligenza = buildStatMenu("intelligenza", userId, charName, remaining, 2);
   const row = new ActionRowBuilder().addComponents(menuIntelligenza);
 
@@ -771,7 +773,6 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     components: [row]
   });
 }
-
 
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_intelligenza")) {
   const parts = interaction.customId.split("_");
@@ -786,7 +787,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   await char.save();
 
   const used = char.stats.forza + char.stats.destrezza + char.stats.percezione + intelligenza;
-  const remaining = 20 - used;
+  const remaining = TOTAL_STAT_POINTS - used;
   const menuCarisma = buildStatMenu("carisma", userId, charName, remaining, 1);
   const row = new ActionRowBuilder().addComponents(menuCarisma);
 
@@ -796,8 +797,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   });
 }
 
-
- if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_carisma")) {
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_carisma")) {
   const parts = interaction.customId.split("_");
   const userId = parts[3];
   const charName = decodeURIComponent(parts.slice(4).join("_"));
@@ -818,11 +818,11 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     Percezione: ${char.stats.percezione}
     Intelligenza: ${char.stats.intelligenza}
     Carisma: ${char.stats.carisma}
-    Totale: ${totale}/20`,
+    Totale: ${totale}/${TOTAL_STAT_POINTS}`,
     components: []
   });
-
 }
+
    
     
 
