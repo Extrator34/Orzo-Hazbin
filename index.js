@@ -411,8 +411,6 @@ if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
 
 return;
 
-}
-
 /* ---------- RAZZA IMP ---------- */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_imp")) {
   const parts = interaction.customId.split("_");
