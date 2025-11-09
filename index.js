@@ -192,7 +192,7 @@ const commands = [
 },
   {
   name: "daily",
-  description: "Claim giornaliero: ottieni 100💰 per ogni tuo personaggio"
+  description: "Claim giornaliero: ottieni 100<:Souls_Roleplay:1436268923191562300> per ogni tuo personaggio"
 },
   {
   name: "levelup",
@@ -1190,7 +1190,7 @@ await askRace({ interaction, characterName: name });
       return `- ${c.name}
   Livello: ${livello}
   Punti infamia: ${c.infamy}😈
-  Souls: ${c.money}💰
+  Souls: ${c.money}<:Souls_Roleplay:1436268923191562300>
   
   -----------------------------`;
     })
@@ -1236,8 +1236,8 @@ await askRace({ interaction, characterName: name });
       await character.save();
 
       await interaction.editReply(createEmbed({
-    title: "💰 Modifica denaro",
-    description: `Aggiunti **${amount}** Souls a **${character.name}** di ${user.username}.\nTotale: ${character.money}💰`,
+    title: "<:Souls_Roleplay:1436268923191562300> Modifica denaro",
+    description: `Aggiunti **${amount}** Souls a **${character.name}** di ${user.username}.\nTotale: ${character.money}<:Souls_Roleplay:1436268923191562300>`,
     color: 0x00ff99
   }));
   return;
@@ -1273,7 +1273,7 @@ await askRace({ interaction, characterName: name });
       if (fromChar.money < amount) {
        await interaction.editReply(createEmbed({
       title: "❌ Fondi insufficienti",
-      description: `**${fromChar.name}** non ha abbastanza Souls (ha ${fromChar.money}💰).`,
+      description: `**${fromChar.name}** non ha abbastanza Souls (ha ${fromChar.money}<:Souls_Roleplay:1436268923191562300>).`,
       color: 0xff0000
     }));
     return;
@@ -1296,10 +1296,10 @@ await askRace({ interaction, characterName: name });
 
       await interaction.editReply(createEmbed({
     title: "✅ Pagamento effettuato",
-    description: `**${fromChar.name}** ha pagato **${amount}💰** a **${toChar.name}** (${toUser.username}).\n` +
+    description: `**${fromChar.name}** ha pagato **${amount}<:Souls_Roleplay:1436268923191562300>** a **${toChar.name}** (${toUser.username}).\n` +
                  `Saldo aggiornato:\n` +
-                 `• ${fromChar.name} → ${fromChar.money}💰\n` +
-                 `• ${toChar.name} → ${toChar.money}💰`,
+                 `• ${fromChar.name} → ${fromChar.money}<:Souls_Roleplay:1436268923191562300>\n` +
+                 `• ${toChar.name} → ${toChar.money}<:Souls_Roleplay:1436268923191562300>`,
     color: 0x00ff99
   }));
   return;
@@ -1471,11 +1471,11 @@ if (char.race) {
     fields: [
       { name: "📈 Livello", value: `${livello}`, inline: true },
       { name: "📊 Avanzamento infamia", value: `${infamyBar}`, inline: false },
-      { name: "💰 Souls", value: `${char.money}💰`, inline: true },
+      { name: "<:Souls_Roleplay:1436268923191562300> Souls", value: `${char.money}<:Souls_Roleplay:1436268923191562300>`, inline: true },
       { name: "😈 Infamia", value: `${infamy}😈`, inline: true },
       { name: "🧬 Razza", value: raceText, inline: true },
       { name: "✨ Abilità", value: abilitaText, inline: false },
-      { name: "🌟 Abilità Innata", value: `${char.lvlInnata || 1}`, inline: true },
+      { name: "🌟 Livello abilità Innata", value: `${char.lvlInnata || 1}`, inline: true },
       { name: "📊 Statistiche", value: statsText, inline: false }
     ],
     image: { url: char.image || null },
@@ -1503,7 +1503,7 @@ if (interaction.commandName === "help") {
   "`/changeimage` – Modifica l'immagine di un tuo personaggio",
   "`/deletepg` – Elimina uno dei tuoi personaggi",
   "`/pay` – Paga un altro personaggio",
-  "`/daily` – Claim giornaliero: ottieni 100💰 per ogni tuo personaggio",
+  "`/daily` – Claim giornaliero: ottieni 100<:Souls_Roleplay:1436268923191562300> per ogni tuo personaggio",
   "`/levelup` – Spendi 1000 punti infamia per far salire di livello un tuo personaggio",
   "`/help` – Mostra la lista dei comandi disponibili"
 ];
@@ -1578,7 +1578,7 @@ if (interaction.commandName === "daily") {
   } else {
     await interaction.editReply(createEmbed({
       title: "✅ Daily claim effettuato",
-      description: `Hai ricevuto **100💰** per ciascun personaggio.\nPersonaggi aggiornati: ${claimedCount}`,
+      description: `Hai ricevuto **100<:Souls_Roleplay:1436268923191562300>** per ciascun personaggio.\nPersonaggi aggiornati: ${claimedCount}`,
       color: 0x00ff99
     }));
   }
