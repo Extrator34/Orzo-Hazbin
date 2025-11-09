@@ -758,7 +758,6 @@ for (let i = 0; i < celestiali.length; i += 25) {
 await interaction.reply({
   content: `📜 Seleziona un'abilità da aggiungere o incrementare per **${char.name}**:`,
   components: rows,
-  flags: MessageFlags.Ephemeral
 });
 
 }
@@ -800,7 +799,6 @@ if (existing) {
     // opzionale: messaggio extra
     await interaction.followUp({
       content: `📜 Log: abilità incrementata`,
-      flags: MessageFlags.Ephemeral
     });
 
   } else {
@@ -825,7 +823,6 @@ if (existing) {
   // opzionale: messaggio extra
   await interaction.followUp({
     content: `📜 Log: nuova abilità aggiunta`,
-    flags: MessageFlags.Ephemeral
   });
 }
 }
