@@ -1580,17 +1580,20 @@ if (interaction.commandName === "changeimage") {
 
 
 
-  } catch (err) {
-    console.error("❌ Errore in interactionCreate:", err);
+} catch (err) {
+  console.error("❌ Errore in interactionCreate:", err);
+  if (interaction.deferred && !interaction.replied) {
     try {
-      if (interaction.deferred && !interaction.replied) {
-        await interaction.editReply("⚠️ Errore interno, riprova più tardi.");
-      } else if (interaction.isRepliable()) {
-        await interaction.reply({ content: "⚠️ Errore interno, riprova più tardi." });
-      }
-    } catch {}
+      await interaction.editReply("⚠️ Errore interno, riprova più tardi.");
+    } catch (e) {}
+  } else if (interaction.isRepliable()) {
+    try {
+      await interaction.reply({ content: "⚠️ Errore interno, riprova più tardi." });
+    } catch (e) {}
   }
+}
 });
+
 
 /* ======================= LOGIN ======================= */
 client.login(process.env.DISCORD_TOKEN);
