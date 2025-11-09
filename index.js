@@ -208,6 +208,14 @@ const commands = [
   ]
 },
   {
+  name: "removeability",
+  description: "(ADMIN ONLY) Rimuovi o decrementa un'abilità da un personaggio",
+  options: [
+    { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
+    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true }
+  ]
+},
+  {
   name: "modifyinfamy",
   description: "(ADMIN ONLY) Aggiungi o rimuovi punti infamia ad un personaggio",
   options: [
@@ -825,8 +833,92 @@ if (interaction.isStringSelectMenu() &&
   }
 }
 
+/*===============================  RIMUOVI ABILITA =================================*/
 
-    
+    if (interaction.isChatInputCommand() && interaction.commandName === "removeability") {
+  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const toUser = interaction.options.getUser("to_user");
+  const toName = interaction.options.getString("to_name");
+
+  const char = await Character.findOne({ userId: toUser.id, name: toName });
+  if (!char) {
+    await interaction.editReply("❌ Personaggio non trovato.");
+    return;
+  }
+
+  if (!char.abilita || char.abilita.length === 0) {
+    await interaction.editReply("❌ Questo personaggio non ha abilità da rimuovere.");
+    return;
+  }
+
+  const rows = [];
+  for (let i = 0; i < char.abilita.length; i += 25) {
+    const chunk = char.abilita.slice(i, i + 25);
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId(`select_removeability_${interaction.user.id}_${encodeURIComponent(char.name)}_${i}`)
+      .setPlaceholder("🗑️ Seleziona abilità da rimuovere/decrementare")
+      .addOptions(chunk.map(a => ({ label: `${a.nome} (lvl ${a.livello})`, value: a.nome })));
+    rows.push(new ActionRowBuilder().addComponents(menu));
+  }
+
+  await interaction.editReply({
+    content: `📜 Seleziona un'abilità da rimuovere o decrementare per **${char.name}**:`,
+    components: rows
+  });
+  return;
+}
+
+
+    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_removeability")) {
+  const parts = interaction.customId.split("_");
+  const creatorId = parts[2];
+  const charName = decodeURIComponent(parts[3]);
+
+  if (interaction.user.id !== creatorId) {
+    await interaction.reply({ content: "⛔ Non puoi usare questo menù.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const selectedAbility = interaction.values[0];
+  const char = await Character.findOne({ userId: creatorId, name: charName });
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const idx = char.abilita.findIndex(a => a.nome === selectedAbility);
+  if (idx === -1) {
+    await interaction.reply({ content: "❌ Abilità non trovata.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const abilitaObj = char.abilita[idx];
+
+  if (abilitaObj.livello > 1) {
+    abilitaObj.livello -= 1;
+    await char.save();
+    await interaction.update({
+      content: `⬇️ Abilità **${selectedAbility}** di **${char.name}** decrementata a livello ${abilitaObj.livello}.`,
+      components: []
+    });
+    return;
+  } else {
+    char.abilita.splice(idx, 1);
+    await char.save();
+    await interaction.update({
+      content: `🗑️ Abilità **${selectedAbility}** rimossa da **${char.name}**.`,
+      components: []
+    });
+    return;
+  }
+}
+
     
 
 /* ======================= SEZIONE STATS ======================= */
