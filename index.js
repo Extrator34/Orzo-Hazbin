@@ -1404,7 +1404,44 @@ if (interaction.commandName === "show") {
     infamyBar += "\n✨ level-up disponibile ✨";
   }
 
-  const color = 0x808080;
+  const raceColors = {
+  bafometto: 0xfcebf1,
+  hellhound: 0xfdde84,
+  infestatore: 0x432d5e,
+  imp: 0xec5123,
+  succube: 0x87d1da,
+  peccatore: 0xd92026,
+  winner: 0xFFD700,   
+  cherubino: 0xC0C0C0, 
+  angelo_caduto: 0x000000 
+};
+
+
+// Colore embed basato sulla razza
+let color = 0x808080; // default grigio
+if (char.race) {
+  const raceKey = char.race.toLowerCase().replace(/ /g, "_");
+  if (raceColors[raceKey]) {
+    color = raceColors[raceKey];
+  }
+}
+
+  const raceThumbnails = {
+  bafometto: "https://i.postimg.cc/bYTt4r9m/Accidia.png",
+  hellhound: "https://i.postimg.cc/63VvWpJ5/Gola.png",
+  infestatore: "https://i.postimg.cc/JR7q7Vyy/Invidia.png",
+  imp: "https://i.postimg.cc/h4qLHHWt/Ira.png",
+  succube: "https://i.postimg.cc/NsX8CQnn/Lussuria.png",
+  peccatore: "https://i.postimg.cc/fMHvJ2X8/Superbia.png",
+  winner: "https://i.postimg.cc/RVGGnNGS/Winner.png",
+  cherubino: "https://i.postimg.cc/WNJ9fppg/Cherubini.png",
+  angelo_caduto: "https://i.postimg.cc/nFQdwVV7/Angeli-caduti.png"
+};
+
+const raceKey = char.race?.toLowerCase().replace(/ /g, "_");
+const thumbnailUrl = raceThumbnails[raceKey] || null;
+
+
 
   const vantaggiText = char.vantaggi?.length
     ? char.vantaggi
@@ -1440,6 +1477,7 @@ if (interaction.commandName === "show") {
       { name: "📊 Statistiche", value: statsText, inline: false }
     ],
     image: { url: char.image || null },
+    thumbnail: { url: thumbnailUrl },
     footer: { text: `Creato da ${targetUser.username}` }
   };
 
