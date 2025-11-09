@@ -137,11 +137,11 @@ const commands = [
 },
   {
     name: "modifymoney",
-    description: "(ADMIN ONLY) Aggiungi o rimuovi soldi ad un personaggio",
+    description: "(ADMIN ONLY) Aggiungi o rimuovi Souls ad un personaggio",
     options: [
       { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
       { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
-      { name: "amount", type: 4, description: "Quantità di soldi da aggiungere", required: true },
+      { name: "amount", type: 4, description: "Quantità di Souls da aggiungere", required: true },
     ],
   },
   {
@@ -151,7 +151,7 @@ const commands = [
       { name: "from_name", type: 3, description: "Il tuo personaggio che paga", required: true, autocomplete: true },
       { name: "to_user", type: 6, description: "Utente che possiede il pg", required: true },
       { name: "to_name", type: 3, description: "Personaggio che riceve il denaro", required: true, autocomplete: true },
-      { name: "amount", type: 4, description: "Quantità di soldi da trasferire", required: true },
+      { name: "amount", type: 4, description: "Quantità di Souls da trasferire", required: true },
     ],
   },
   {
@@ -1190,7 +1190,7 @@ await askRace({ interaction, characterName: name });
       return `- ${c.name}
   Livello: ${livello}
   Punti infamia: ${c.infamy}😈
-  Soldi: ${c.money}💰
+  Souls: ${c.money}💰
   
   -----------------------------`;
     })
@@ -1237,7 +1237,7 @@ await askRace({ interaction, characterName: name });
 
       await interaction.editReply(createEmbed({
     title: "💰 Modifica denaro",
-    description: `Aggiunti **${amount}** soldi a **${character.name}** di ${user.username}.\nTotale: ${character.money}💰`,
+    description: `Aggiunti **${amount}** Souls a **${character.name}** di ${user.username}.\nTotale: ${character.money}💰`,
     color: 0x00ff99
   }));
   return;
@@ -1273,7 +1273,7 @@ await askRace({ interaction, characterName: name });
       if (fromChar.money < amount) {
        await interaction.editReply(createEmbed({
       title: "❌ Fondi insufficienti",
-      description: `**${fromChar.name}** non ha abbastanza soldi (ha ${fromChar.money}💰).`,
+      description: `**${fromChar.name}** non ha abbastanza Souls (ha ${fromChar.money}💰).`,
       color: 0xff0000
     }));
     return;
@@ -1471,7 +1471,7 @@ if (char.race) {
     fields: [
       { name: "📈 Livello", value: `${livello}`, inline: true },
       { name: "📊 Avanzamento infamia", value: `${infamyBar}`, inline: false },
-      { name: "💰 Soldi", value: `${char.money}💰`, inline: true },
+      { name: "💰 Souls", value: `${char.money}💰`, inline: true },
       { name: "😈 Infamia", value: `${infamy}😈`, inline: true },
       { name: "🧬 Razza", value: raceText, inline: true },
       { name: "✨ Abilità", value: abilitaText, inline: false },
@@ -1508,7 +1508,7 @@ if (interaction.commandName === "help") {
 ];
 
  const adminCommands = [
-  "`/modifymoney` – Aggiungi o rimuovi soldi ad un personaggio",
+  "`/modifymoney` – Aggiungi o rimuovi Souls ad un personaggio",
   "`/modifyinnata` – Modifica il livello innato di un personaggio",
   "`/modifyinfamy` – Aggiungi o rimuovi punti infamia ad un personaggio",
   "`/addability` – Aggiungi o incrementa un'abilità a un personaggio",
@@ -1673,6 +1673,38 @@ if (interaction.commandName === "levelup") {
   }));
   return;
 }
+
+    /*=========================  MODIFY INNATA ============================*/
+    if (interaction.isChatInputCommand() && interaction.commandName === "modifyinnata") {
+  // Controllo permessi admin
+  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const toUser = interaction.options.getUser("to_user");
+  const toName = interaction.options.getString("to_name");
+  const amount = interaction.options.getInteger("amount");
+
+  const char = await Character.findOne({ userId: toUser.id, name: toName });
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Aggiorna lvlInnata
+  let newLvl = (char.lvlInnata || 1) + amount;
+  if (newLvl < 1) newLvl = 1;
+  if (newLvl > 5) newLvl = 5;
+
+  char.lvlInnata = newLvl;
+  await char.save();
+
+  await interaction.reply({
+    content: `✅ lvlInnata di **${char.name}** aggiornato a **${newLvl}** (modifica: ${amount >= 0 ? "+" : ""}${amount})`
+  });
+}
+
 
 
     /* ---------- CHANGEIMAGE ---------- */
