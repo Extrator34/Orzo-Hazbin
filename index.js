@@ -438,6 +438,16 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
     components: []
   });
+  // Avvia la distribuzione statistiche
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const row = new ActionRowBuilder().addComponents(statMenu);
+
+await interaction.followUp({
+  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+  components: [row],
+  flags: MessageFlags.Ephemeral
+});
+
 }
 
     /* ---------- RAZZA PECCATORI ---------- */
@@ -501,6 +511,16 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
     components: []
   });
+      // Avvia la distribuzione statistiche
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const row = new ActionRowBuilder().addComponents(statMenu);
+
+await interaction.followUp({
+  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+  components: [row],
+  flags: MessageFlags.Ephemeral
+});
+
 }
 
       /* ---------- RAZZA WINNER ---------- */
@@ -575,6 +595,16 @@ if (interaction.isStringSelectMenu() &&
     content: `✅ Abilità celestiali selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
     components: []
   });
+  // Avvia la distribuzione statistiche
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const row = new ActionRowBuilder().addComponents(statMenu);
+
+await interaction.followUp({
+  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+  components: [row],
+  flags: MessageFlags.Ephemeral
+});
+
 }
 
     
@@ -772,6 +802,16 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     Totale: ${totale}/20`,
     components: []
   });
+   // Avvia la distribuzione statistiche
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const row = new ActionRowBuilder().addComponents(statMenu);
+
+await interaction.followUp({
+  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+  components: [row],
+  flags: MessageFlags.Ephemeral
+});
+
 }
    
     
