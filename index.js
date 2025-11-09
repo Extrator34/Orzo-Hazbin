@@ -684,7 +684,23 @@ if (interaction.isStringSelectMenu() &&
     content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedInfAbility}`,
     components: []
   });
+
+  // Avvia la distribuzione statistiche SOLO se non già avviata
+  if (!char.statsAssigned) {
+    char.statsAssigned = true;
+    await char.save();
+
+    const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+    const row = new ActionRowBuilder().addComponents(statMenu);
+
+    await interaction.followUp({
+      content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+      components: [row],
+      flags: MessageFlags.Ephemeral
+    });
+  }
 }
+
 
 /* ======================= SEZIONE STATS ======================= */
     if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_forza")) {
