@@ -216,13 +216,12 @@ const commands = [
     { name: "amount", type: 4, description: "Quantità di punti infamia da aggiungere", required: true },
   ],
 },
-  {
+{
   name: "addability",
   description: "(ADMIN ONLY) Aggiungi o incrementa un'abilità a un personaggio",
   options: [
     { name: "to_user", type: 6, description: "Utente proprietario del personaggio", required: true },
-    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true },
-    { name: "ability", type: 3, description: "Nome dell'abilità da aggiungere", required: true, autocomplete: true }
+    { name: "to_name", type: 3, description: "Nome del personaggio", required: true, autocomplete: true }
   ]
 }
 ];
@@ -704,6 +703,103 @@ if (interaction.isStringSelectMenu() &&
 
 // Definisci una costante globale all'inizio del file
 const TOTAL_STAT_POINTS = 25;
+
+
+
+    
+
+
+/* ======================= SEZIONE ABILITà ======================= */
+ if (interaction.isChatInputCommand() && interaction.commandName === "modifyinnata") {
+  // Controllo permessi admin
+  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const toUser = interaction.options.getUser("to_user");
+  const toName = interaction.options.getString("to_name");
+  const amount = interaction.options.getInteger("amount");
+
+  const char = await Character.findOne({ userId: toUser.id, name: toName });
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Aggiorna lvlInnata
+  let newLvl = (char.lvlInnata || 1) + amount;
+  if (newLvl < 1) newLvl = 1;
+  if (newLvl > 5) newLvl = 5;
+
+  char.lvlInnata = newLvl;
+  await char.save();
+
+  await interaction.reply({
+    content: `✅ lvlInnata di **${char.name}** aggiornato a **${newLvl}** (modifica: ${amount >= 0 ? "+" : ""}${amount})`
+  });
+}
+
+
+    if (interaction.isChatInputCommand() && interaction.commandName === "addability") {
+  // Controllo permessi admin
+  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  const toUser = interaction.options.getUser("to_user");
+  const toName = interaction.options.getString("to_name");
+  const abilityName = interaction.options.getString("ability");
+
+  const char = await Character.findOne({ userId: toUser.id, name: toName });
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Cerca l'abilità nella lista globale (abilities.js)
+  const abilitaObj = [...abilitaInfernali, ...abilitaCelestiali].find(a => a.nome === abilityName);
+  if (!abilitaObj) {
+    await interaction.reply({ content: "❌ Abilità non trovata nella lista.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Controlla se il personaggio ha già l'abilità
+  const existing = char.abilita.find(a => a.nome === abilityName);
+
+  if (existing) {
+    // Incrementa livello fino a max 3
+    if (existing.livello < 3) {
+      existing.livello += 1;
+      await char.save();
+      await interaction.reply({
+        content: `✅ Abilità **${abilityName}** di **${char.name}** incrementata a livello ${existing.livello}.`
+      });
+    } else {
+      await interaction.reply({
+        content: `⚠️ Abilità **${abilityName}** di **${char.name}** è già al livello massimo (3).`
+      });
+    }
+  } else {
+    // Aggiungi nuova abilità con livello 1
+    char.abilita.push({
+      nome: abilitaObj.nome,
+      descrizione: abilitaObj.descrizione || "",
+      livello: 1
+    });
+    await char.save();
+    await interaction.reply({
+      content: `✅ Abilità **${abilityName}** aggiunta a **${char.name}** (livello 1).`
+    });
+  }
+}
+
+
+
+
+    
+    
 
 /* ======================= SEZIONE STATS ======================= */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_forza")) {
@@ -1395,91 +1491,6 @@ if (interaction.commandName === "levelup") {
     color: 0x00ff99
   }));
   return;
-}
-
-    if (interaction.isChatInputCommand() && interaction.commandName === "modifyinnata") {
-  // Controllo permessi admin
-  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
-    return;
-  }
-
-  const toUser = interaction.options.getUser("to_user");
-  const toName = interaction.options.getString("to_name");
-  const amount = interaction.options.getInteger("amount");
-
-  const char = await Character.findOne({ userId: toUser.id, name: toName });
-  if (!char) {
-    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
-    return;
-  }
-
-  // Aggiorna lvlInnata
-  let newLvl = (char.lvlInnata || 1) + amount;
-  if (newLvl < 1) newLvl = 1;
-  if (newLvl > 5) newLvl = 5;
-
-  char.lvlInnata = newLvl;
-  await char.save();
-
-  await interaction.reply({
-    content: `✅ lvlInnata di **${char.name}** aggiornato a **${newLvl}** (modifica: ${amount >= 0 ? "+" : ""}${amount})`
-  });
-}
-
-
-    if (interaction.isChatInputCommand() && interaction.commandName === "addability") {
-  // Controllo permessi admin
-  if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-    await interaction.reply({ content: "❌ Non hai i permessi per usare questo comando.", flags: MessageFlags.Ephemeral });
-    return;
-  }
-
-  const toUser = interaction.options.getUser("to_user");
-  const toName = interaction.options.getString("to_name");
-  const abilityName = interaction.options.getString("ability");
-
-  const char = await Character.findOne({ userId: toUser.id, name: toName });
-  if (!char) {
-    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
-    return;
-  }
-
-  // Cerca l'abilità nella lista globale (abilities.js)
-  const abilitaObj = [...abilitaInfernali, ...abilitaCelestiali].find(a => a.nome === abilityName);
-  if (!abilitaObj) {
-    await interaction.reply({ content: "❌ Abilità non trovata nella lista.", flags: MessageFlags.Ephemeral });
-    return;
-  }
-
-  // Controlla se il personaggio ha già l'abilità
-  const existing = char.abilita.find(a => a.nome === abilityName);
-
-  if (existing) {
-    // Incrementa livello fino a max 3
-    if (existing.livello < 3) {
-      existing.livello += 1;
-      await char.save();
-      await interaction.reply({
-        content: `✅ Abilità **${abilityName}** di **${char.name}** incrementata a livello ${existing.livello}.`
-      });
-    } else {
-      await interaction.reply({
-        content: `⚠️ Abilità **${abilityName}** di **${char.name}** è già al livello massimo (3).`
-      });
-    }
-  } else {
-    // Aggiungi nuova abilità con livello 1
-    char.abilita.push({
-      nome: abilitaObj.nome,
-      descrizione: abilitaObj.descrizione || "",
-      livello: 1
-    });
-    await char.save();
-    await interaction.reply({
-      content: `✅ Abilità **${abilityName}** aggiunta a **${char.name}** (livello 1).`
-    });
-  }
 }
 
 
