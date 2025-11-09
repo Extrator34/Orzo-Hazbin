@@ -1562,7 +1562,7 @@ if (interaction.commandName === "daily") {
 
 /* ---------- LEVELUP ---------- */
 if (interaction.commandName === "levelup") {
-  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  await interaction.deferReply();
 
   const fromName = interaction.options.getString("from_name");
   const char = await Character.findOne({ userId: interaction.user.id, name: fromName });
