@@ -397,7 +397,7 @@ await interaction.update({
 // Avvia la distribuzione statistiche
 if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
   // Avvia stats qui solo per razze normali
-  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
   const row = new ActionRowBuilder().addComponents(statMenu);
   await interaction.followUp({
     content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
@@ -441,7 +441,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     components: []
   });
   // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
 const row = new ActionRowBuilder().addComponents(statMenu);
 
 await interaction.followUp({
@@ -515,7 +515,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     components: []
   });
       // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
 const row = new ActionRowBuilder().addComponents(statMenu);
 
 await interaction.followUp({
@@ -599,7 +599,7 @@ if (interaction.isStringSelectMenu() &&
     components: []
   });
   // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
 const row = new ActionRowBuilder().addComponents(statMenu);
 
 await interaction.followUp({
@@ -690,7 +690,7 @@ if (interaction.isStringSelectMenu() &&
     char.statsAssigned = true;
     await char.save();
 
-    const statMenu = buildStatMenu("forza", interaction.user.id, charName, 20, 5);
+    const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
     const row = new ActionRowBuilder().addComponents(statMenu);
 
     await interaction.followUp({
