@@ -73,6 +73,15 @@ const characterSchema = new mongoose.Schema({
   lvlInnata: { type: Number, min: 1, max: 5, default: 1 },
   race: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
+    avanzato: { type: Boolean, default: true }, 
+  numeroProprieta: { type: Number, default: 0 }, 
+  proprieta: { 
+    type: [{
+      nome: String,
+      grandezza: { type: String, enum: ["piccola", "media", "grande"], default: "piccola" }
+    }],
+    default: []
+  },
   
   abilita: {
     type: [{
