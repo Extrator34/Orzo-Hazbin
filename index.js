@@ -779,6 +779,52 @@ if (interaction.isChatInputCommand() && interaction.commandName === "addability"
 }
 
 
+    /* ---------- SCELTA ABILITÀ INFERNALI ---------- */
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_infernal_ability")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[3];
+  const charName = decodeURIComponent(parts[4]);
+  const step = parseInt(parts[5]); // quale abilità sta scegliendo (1, 2 o 3)
+
+  const selectedAbility = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+
+  if (!char) {
+    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
+    return;
+  }
+
+  // Trova l'oggetto abilità dalla lista infernali
+  const abilitaObj = abilitaInfernali.find(a => a.nome === selectedAbility);
+  if (abilitaObj) char.abilita.push(abilitaObj);
+  await char.save();
+
+  if (step < 3) {
+    // Prepara il menu per la prossima abilità
+    const abilitaFiltrate = abilitaInfernali.filter(a => !char.abilita.some(sel => sel.nome === a.nome));
+    const choiceMenu = new StringSelectMenuBuilder()
+      .setCustomId(`select_infernal_ability_${interaction.user.id}_${encodeURIComponent(charName)}_${step + 1}`)
+      .setPlaceholder(`Scegli abilità infernale ${step + 1}/3`)
+      .addOptions(
+        abilitaFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
+      );
+
+    const row = new ActionRowBuilder().addComponents(choiceMenu);
+
+    await interaction.update({
+      content: `✅ Abilità ${step} selezionata: **${selectedAbility}**.\nOra scegli la ${step + 1}ª abilità:`,
+      components: [row]
+    });
+  } else {
+    // Ha scelto tutte e 3 le abilità
+    await interaction.update({
+      content: `✅ Abilità selezionate per **${char.name}**:\n${char.abilita.slice(-3).map((a, i) => `${i + 1}. ${a.nome}`).join("\n")}`,
+      components: []
+    });
+  }
+}
+
+
 /* ---------- ADDABILITY MENU HANDLER ---------- */
 if (interaction.isStringSelectMenu() &&
    (interaction.customId.startsWith("select_addability_inferno") ||
