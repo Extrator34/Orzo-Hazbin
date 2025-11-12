@@ -779,7 +779,7 @@ if (interaction.isChatInputCommand() && interaction.commandName === "addability"
 }
 
 
-    /* ---------- SCELTA ABILITÀ INFERNALI ---------- */
+ /* ---------- SCELTA ABILITÀ INFERNALI ---------- */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_infernal_ability")) {
   const parts = interaction.customId.split("_");
   const userId = parts[3];
@@ -811,18 +811,20 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
     const row = new ActionRowBuilder().addComponents(choiceMenu);
 
-    await interaction.update({
+    await interaction.followUp({
       content: `✅ Abilità ${step} selezionata: **${selectedAbility}**.\nOra scegli la ${step + 1}ª abilità:`,
-      components: [row]
+      components: [row],
+      flags: MessageFlags.Ephemeral
     });
   } else {
     // Ha scelto tutte e 3 le abilità
-    await interaction.update({
+    await interaction.followUp({
       content: `✅ Abilità selezionate per **${char.name}**:\n${char.abilita.slice(-3).map((a, i) => `${i + 1}. ${a.nome}`).join("\n")}`,
-      components: []
+      flags: MessageFlags.Ephemeral
     });
   }
 }
+
 
 
 /* ---------- ADDABILITY MENU HANDLER ---------- */
