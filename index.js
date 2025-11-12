@@ -779,51 +779,7 @@ if (interaction.isChatInputCommand() && interaction.commandName === "addability"
 }
 
 
- /* ---------- SCELTA ABILITÀ INFERNALI ---------- */
-if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_infernal_ability")) {
-  const parts = interaction.customId.split("_");
-  const userId = parts[3];
-  const charName = decodeURIComponent(parts[4]);
-  const step = parseInt(parts[5]); // quale abilità sta scegliendo (1, 2 o 3)
 
-  const selectedAbility = interaction.values[0];
-  const char = await Character.findOne({ userId, name: charName });
-
-  if (!char) {
-    await interaction.reply({ content: "❌ Personaggio non trovato.", flags: MessageFlags.Ephemeral });
-    return;
-  }
-
-  // Trova l'oggetto abilità dalla lista infernali
-  const abilitaObj = abilitaInfernali.find(a => a.nome === selectedAbility);
-  if (abilitaObj) char.abilita.push(abilitaObj);
-  await char.save();
-
-  if (step < 3) {
-    // Prepara il menu per la prossima abilità
-    const abilitaFiltrate = abilitaInfernali.filter(a => !char.abilita.some(sel => sel.nome === a.nome));
-    const choiceMenu = new StringSelectMenuBuilder()
-      .setCustomId(`select_infernal_ability_${interaction.user.id}_${encodeURIComponent(charName)}_${step + 1}`)
-      .setPlaceholder(`Scegli abilità infernale ${step + 1}/3`)
-      .addOptions(
-        abilitaFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
-      );
-
-    const row = new ActionRowBuilder().addComponents(choiceMenu);
-
-    await interaction.followUp({
-      content: `✅ Abilità ${step} selezionata: **${selectedAbility}**.\nOra scegli la ${step + 1}ª abilità:`,
-      components: [row],
-      flags: MessageFlags.Ephemeral
-    });
-  } else {
-    // Ha scelto tutte e 3 le abilità
-    await interaction.followUp({
-      content: `✅ Abilità selezionate per **${char.name}**:\n${char.abilita.slice(-3).map((a, i) => `${i + 1}. ${a.nome}`).join("\n")}`,
-      flags: MessageFlags.Ephemeral
-    });
-  }
-}
 
 
 
@@ -1084,6 +1040,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   const totale = char.stats.forza + char.stats.destrezza + char.stats.percezione + char.stats.intelligenza + carisma;
 
+  // Riepilogo statistiche
   await interaction.update({
     content: `✅ Statistiche finali per **${char.name}**:\n
     Forza: ${char.stats.forza}
@@ -1094,11 +1051,88 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     Totale: ${totale}/${TOTAL_STAT_POINTS}`,
     components: []
   });
+
+  // --- Subito dopo: abilità extra ---
+  let pool = [];
+  if (["peccatore","hellhound","succube","imp","bafometto","infestatore"].includes(char.race)) {
+    pool = abilitaInfernali;
+  } else if (["winner","cherubino"].includes(char.race)) {
+    pool = abilitaCelestiali;
+  } else if (char.race === "angelo_caduto") {
+    pool = [...abilitaInfernali, ...abilitaCelestiali];
+  }
+
+  const choiceMenu = new StringSelectMenuBuilder()
+    .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_1`)
+    .setPlaceholder("Scegli abilità extra 1/3")
+    .addOptions(pool.slice(0,25).map(a => ({ label: a.nome, value: a.nome })));
+
+  const row = new ActionRowBuilder().addComponents(choiceMenu);
+
+  await interaction.followUp({
+    content: `📜 Ora scegli la **prima abilità extra** per ${char.name}:`,
+    components: [row],
+    flags: MessageFlags.Ephemeral
+  });
 }
 
-   
-    
 
+
+  /*========================= ABILITA EXTRA ================================*/
+    
+if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_extra_ability")) {
+  const parts = interaction.customId.split("_");
+  const userId = parts[3];
+  const charName = decodeURIComponent(parts[4]);
+  const step = parseInt(parts[5]);
+
+  const selectedAbility = interaction.values[0];
+  const char = await Character.findOne({ userId, name: charName });
+  if (!char) return;
+
+  // Trova la lista corretta
+  let pool = [];
+  if (["peccatore","hellhound","succube","imp","bafometto","infestatore"].includes(char.race)) {
+    pool = abilitaInfernali;
+  } else if (["winner","cherubino"].includes(char.race)) {
+    pool = abilitaCelestiali;
+  } else if (char.race === "angelo_caduto") {
+    pool = [...abilitaInfernali, ...abilitaCelestiali];
+  }
+
+  const abilitaObj = pool.find(a => a.nome === selectedAbility);
+  if (abilitaObj) {
+    // Se già presente → incrementa livello (max 3)
+    const existing = char.abilita.find(a => a.nome === abilitaObj.nome);
+    if (existing) {
+      existing.livello = Math.min(existing.livello + 1, 3);
+    } else {
+      char.abilita.push({ ...abilitaObj, livello: 1 });
+    }
+    await char.save();
+  }
+
+  if (step < 3) {
+    // Prepara il prossimo menù
+    const choiceMenu = new StringSelectMenuBuilder()
+      .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}`)
+      .setPlaceholder(`Scegli abilità extra ${step+1}/3`)
+      .addOptions(pool.slice(0,25).map(a => ({ label: a.nome, value: a.nome })));
+
+    const row = new ActionRowBuilder().addComponents(choiceMenu);
+
+    await interaction.update({
+      content: `✅ Abilità ${step} selezionata: **${selectedAbility}**.\nOra scegli la ${step+1}ª abilità:`,
+      components: [row]
+    });
+  } else {
+    // Ha scelto tutte e 3
+    await interaction.update({
+      content: `✅ Abilità extra selezionate per **${char.name}**:\n${char.abilita.slice(-3).map((a,i)=>`${i+1}. ${a.nome} (Lv.${a.livello})`).join("\n")}`,
+      components: []
+    });
+  }
+}
 
   /* ---------- Autocomplete ---------- */
 if (interaction.isAutocomplete()) {
