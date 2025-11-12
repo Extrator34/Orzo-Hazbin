@@ -1088,7 +1088,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
         .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
       rows.push(new ActionRowBuilder().addComponents(menu));
     }
- } else if (char.race === "angelo_caduto") {
+} else if (char.race === "angelo_caduto") {
   // Liste base con filtri per abilità vietate
   const poolInfernoBase = abilitaInfernali.filter(a =>
     !["Armi da Fuoco Leggere","Armi Pesanti","Corpo a Corpo Urbano"].includes(a.nome)
@@ -1133,6 +1133,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     flags: MessageFlags.Ephemeral
   });
 }
+
 
 
   /*========================= ABILITA EXTRA ================================*/
