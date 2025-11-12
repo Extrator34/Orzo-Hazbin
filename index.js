@@ -1062,21 +1062,29 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     pool = [...abilitaInfernali, ...abilitaCelestiali];
   }
 
-  const choiceMenu = new StringSelectMenuBuilder()
-    .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_1`)
-    .setPlaceholder("Scegli abilità extra 1/3")
-    .addOptions(pool.slice(0,25).map(a => ({ label: a.nome, value: a.nome })));
+  // Filtra abilità già al livello 3 → non devono apparire
+  const abilitaDisponibili = pool.filter(a => {
+    const existing = char.abilita.find(x => x.nome === a.nome);
+    return !(existing && existing.livello >= 3);
+  });
 
-  const row = new ActionRowBuilder().addComponents(choiceMenu);
+  // Split in chunk da 25
+  const rows = [];
+  for (let i = 0; i < abilitaDisponibili.length; i += 25) {
+    const chunk = abilitaDisponibili.slice(i, i + 25);
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_1_${i}`)
+      .setPlaceholder("Scegli abilità extra 1/3")
+      .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+    rows.push(new ActionRowBuilder().addComponents(menu));
+  }
 
   await interaction.followUp({
     content: `📜 Ora scegli la **prima abilità extra** per ${char.name}:`,
-    components: [row],
+    components: rows,
     flags: MessageFlags.Ephemeral
   });
 }
-
-
 
   /*========================= ABILITA EXTRA ================================*/
     
@@ -1084,9 +1092,9 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   const parts = interaction.customId.split("_");
   const userId = parts[3];
   const charName = decodeURIComponent(parts[4]);
-  const step = parseInt(parts[5]);
-
+  const step = parseInt(parts[5]); // 1, 2, 3
   const selectedAbility = interaction.values[0];
+
   const char = await Character.findOne({ userId, name: charName });
   if (!char) return;
 
@@ -1102,10 +1110,9 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   const abilitaObj = pool.find(a => a.nome === selectedAbility);
   if (abilitaObj) {
-    // Se già presente → incrementa livello (max 3)
     const existing = char.abilita.find(a => a.nome === abilitaObj.nome);
     if (existing) {
-      existing.livello = Math.min(existing.livello + 1, 3);
+      existing.livello = Math.min(existing.livello + 1, 3); // max lvl 3
     } else {
       char.abilita.push({ ...abilitaObj, livello: 1 });
     }
@@ -1113,17 +1120,26 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   }
 
   if (step < 3) {
-    // Prepara il prossimo menù
-    const choiceMenu = new StringSelectMenuBuilder()
-      .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}`)
-      .setPlaceholder(`Scegli abilità extra ${step+1}/3`)
-      .addOptions(pool.slice(0,25).map(a => ({ label: a.nome, value: a.nome })));
+    // Filtra abilità già al livello 3
+    const abilitaDisponibili = pool.filter(a => {
+      const existing = char.abilita.find(x => x.nome === a.nome);
+      return !(existing && existing.livello >= 3);
+    });
 
-    const row = new ActionRowBuilder().addComponents(choiceMenu);
+    // Split in chunk da 25
+    const rows = [];
+    for (let i = 0; i < abilitaDisponibili.length; i += 25) {
+      const chunk = abilitaDisponibili.slice(i, i + 25);
+      const menu = new StringSelectMenuBuilder()
+        .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}_${i}`)
+        .setPlaceholder(`Scegli abilità extra ${step+1}/3`)
+        .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+      rows.push(new ActionRowBuilder().addComponents(menu));
+    }
 
     await interaction.update({
       content: `✅ Abilità ${step} selezionata: **${selectedAbility}**.\nOra scegli la ${step+1}ª abilità:`,
-      components: [row]
+      components: rows
     });
   } else {
     // Ha scelto tutte e 3
