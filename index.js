@@ -1837,8 +1837,8 @@ if (interaction.commandName === "levelup") {
 
   await interaction.editReply(createEmbed({
     title: "😈 Livello acquistato",
-    description: `**${char.name}** ha speso **1000😈** per salire al livello **${newLevel}**!\n` +
-                 `Exp impostata a ${newBaseExp} | Infamia residua: ${char.infamy}😈`,
+    description: `**${char.name}** ha speso **1000😈** per salire al livello **${newLevel}**!\nApri un ticket per l'assistenza roleplay per migliorare il tuo personaggio.\n` +
+                 `Infamia residua: ${char.infamy}😈`,
     color: 0x00ff99
   }));
   return;
