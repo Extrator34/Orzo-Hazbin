@@ -509,24 +509,30 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     corpo_a_corpo: { nome: "Corpo a Corpo Urbano", descrizione: "Combattimento fisico ravvicinato", livello: 1 }
   };
 
-  char.abilita.push(abilityMap[selectedAbility]);
+  // Usa l’helper per aggiungere o incrementare
+  const res = addOrIncrementAbility(char, abilityMap[selectedAbility]);
   await char.save();
 
   await interaction.update({
-    content: `✅ Abilità aggiuntiva selezionata per **${char.name}**: ${abilityMap[selectedAbility].nome}`,
+    content: res.added
+      ? `✅ Abilità aggiunta per **${char.name}**: ${res.name} (Lv.1)`
+      : res.capped
+        ? `⚠️ ${res.name} è già al livello massimo (3).`
+        : `✅ ${res.name} di **${char.name}** aumentata: Lv.${res.before} → Lv.${res.after}`,
     components: []
   });
+
   // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
+  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
+  const row = new ActionRowBuilder().addComponents(statMenu);
 
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
-});
-
+  await interaction.followUp({
+    content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+    components: [row],
+    flags: MessageFlags.Ephemeral
+  });
 }
+
 
 
    /* ---------- RAZZA PECCATORI ---------- */
@@ -613,9 +619,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   });
 }
 
-
-      /* ---------- RAZZA WINNER ---------- */
-    
+/* ---------- RAZZA WINNER ---------- */
 if (interaction.isStringSelectMenu() && 
    (interaction.customId.startsWith("select_winner1") || interaction.customId.startsWith("select_winner1b"))) {
   
@@ -631,37 +635,55 @@ if (interaction.isStringSelectMenu() &&
     return;
   }
 
-  // Salva la prima abilità
+  // Usa l’helper per aggiungere/incrementare
   const abilitaObj1 = abilitaCelestiali.find(a => a.nome === selectedAbility1);
-  if (abilitaObj1) char.abilita.push(abilitaObj1);
+  const res1 = addOrIncrementAbility(char, abilitaObj1);
   await char.save();
 
-  // Filtra la lista escludendo la prima scelta
- 
+  // Filtra abilità disponibili (non al livello 3)
+  const availableAbilities = abilitaCelestiali.filter(a => {
+    const existing = char.abilita.find(ab => ab.nome === a.nome);
+    return !existing || existing.livello < 3;
+  });
 
+  if (availableAbilities.length === 0) {
+    await interaction.update({
+      content: `✅ Prima abilità: **${res1.name}**.\n⚠️ Non ci sono altre abilità disponibili (già tutte al livello massimo).`,
+      components: []
+    });
+    return;
+  }
+
+  // Costruisci menù per la seconda abilità
   const choiceMenu2 = new StringSelectMenuBuilder()
     .setCustomId(`select_winner2_${interaction.user.id}_${encodeURIComponent(charName)}`)
     .setPlaceholder("Scegli la seconda abilità da Winner")
     .addOptions(
-      abilitaCelestiali.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
+      availableAbilities.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
     );
 
   const rows = [new ActionRowBuilder().addComponents(choiceMenu2)];
-  if (abilitaCelestiali.length > 25) {
+  if (availableAbilities.length > 25) {
     const choiceMenu2b = new StringSelectMenuBuilder()
       .setCustomId(`select_winner2b_${interaction.user.id}_${encodeURIComponent(charName)}`)
-      .setPlaceholder("Scegli la seconda abilità da Winner (26+)")
+      .setPlaceholder("Scegli la seconda abilità da Winner (extra)")
       .addOptions(
-        abilitaCelestiali.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+        availableAbilities.slice(25).map(a => ({ label: a.nome, value: a.nome }))
       );
     rows.push(new ActionRowBuilder().addComponents(choiceMenu2b));
   }
 
   await interaction.update({
-    content: `✅ Prima abilità celestiale selezionata: **${selectedAbility1}**.\nOra scegli la **seconda abilità**:`,
+    content: res1.added
+      ? `✅ Prima abilità celestiale: **${res1.name}** (Lv.1). Ora scegli la seconda abilità:`
+      : res1.capped
+        ? `⚠️ **${res1.name}** è già al livello massimo (3). Ora scegli la seconda abilità:`
+        : `✅ **${res1.name}** aumentata: Lv.${res1.before} → Lv.${res1.after}. Ora scegli la seconda abilità:`,
     components: rows
   });
 }
+
+
 if (interaction.isStringSelectMenu() && 
    (interaction.customId.startsWith("select_winner2") || interaction.customId.startsWith("select_winner2b"))) {
   
@@ -677,30 +699,36 @@ if (interaction.isStringSelectMenu() &&
     return;
   }
 
-  // Salva la seconda abilità
+  // Usa l’helper per aggiungere/incrementare
   const abilitaObj2 = abilitaCelestiali.find(a => a.nome === selectedAbility2);
-  if (abilitaObj2) char.abilita.push(abilitaObj2);
+  const res2 = addOrIncrementAbility(char, abilitaObj2);
   await char.save();
 
   await interaction.update({
-    content: `✅ Abilità celestiali selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
+    content: res2.added
+      ? `✅ Abilità celestiale aggiunta per **${char.name}**: ${res2.name} (Lv.1)`
+      : res2.capped
+        ? `⚠️ ${res2.name} è già al livello massimo (3).`
+        : `✅ ${res2.name} di **${char.name}** aumentata: Lv.${res2.before} → Lv.${res2.after}`,
     components: []
   });
+
   // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
+  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
+  const row = new ActionRowBuilder().addComponents(statMenu);
 
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
-});
-
+  await interaction.followUp({
+    content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+    components: [row],
+    flags: MessageFlags.Ephemeral
+  });
 }
-
     
-/*-------------------- RAZZA ANGELO CADUTO  --------------------*/
-    if (interaction.isStringSelectMenu() && 
+   
+    
+
+/*-------------------- RAZZA ANGELO CADUTO --------------------*/
+if (interaction.isStringSelectMenu() && 
    (interaction.customId.startsWith("select_caduto1") || interaction.customId.startsWith("select_caduto1b"))) {
   
   const parts = interaction.customId.split("_");
@@ -715,15 +743,25 @@ await interaction.followUp({
     return;
   }
 
-  // Salva abilità celestiale
+  // Usa l’helper per aggiungere/incrementare abilità celestiale
   const abilitaObjCel = abilitaCelestiali.find(a => a.nome === selectedCelAbility);
-  if (abilitaObjCel) char.abilita.push(abilitaObjCel);
+  const resCel = addOrIncrementAbility(char, abilitaObjCel);
   await char.save();
 
-  // Filtra abilità infernali escludendo le tre vietate
-  const abilitaInfernaliFiltrate = abilitaInfernali.filter(a =>
-    !["Armi da Fuoco Leggere", "Armi Pesanti", "Corpo a Corpo Urbano"].includes(a.nome)
-  );
+  // Filtra abilità infernali escludendo le tre vietate e quelle già al livello 3
+  const abilitaInfernaliFiltrate = abilitaInfernali.filter(a => {
+    if (["Armi da Fuoco Leggere", "Armi Pesanti", "Corpo a Corpo Urbano"].includes(a.nome)) return false;
+    const existing = char.abilita.find(ab => ab.nome === a.nome);
+    return !existing || existing.livello < 3;
+  });
+
+  if (abilitaInfernaliFiltrate.length === 0) {
+    await interaction.update({
+      content: `✅ Abilità celestiale selezionata: **${resCel.name}**.\n⚠️ Non ci sono abilità infernali disponibili.`,
+      components: []
+    });
+    return;
+  }
 
   const choiceMenuInf = new StringSelectMenuBuilder()
     .setCustomId(`select_caduto2_${interaction.user.id}_${encodeURIComponent(charName)}`)
@@ -744,10 +782,17 @@ await interaction.followUp({
   }
 
   await interaction.update({
-    content: `✅ Abilità celestiale selezionata: **${selectedCelAbility}**.\nOra scegli la **seconda abilità infernale** (alcune escluse):`,
+    content: resCel.added
+      ? `✅ Abilità celestiale selezionata: **${resCel.name}** (Lv.1).\nOra scegli la seconda abilità infernale:`
+      : resCel.capped
+        ? `⚠️ **${resCel.name}** è già al livello massimo (3).\nOra scegli la seconda abilità infernale:`
+        : `✅ **${resCel.name}** aumentata: Lv.${resCel.before} → Lv.${resCel.after}.\nOra scegli la seconda abilità infernale:`,
     components: rows
   });
 }
+
+
+    
 if (interaction.isStringSelectMenu() && 
    (interaction.customId.startsWith("select_caduto2") || interaction.customId.startsWith("select_caduto2b"))) {
   
@@ -763,13 +808,17 @@ if (interaction.isStringSelectMenu() &&
     return;
   }
 
-  // Salva abilità infernale
+  // Usa l’helper per aggiungere/incrementare abilità infernale
   const abilitaObjInf = abilitaInfernali.find(a => a.nome === selectedInfAbility);
-  if (abilitaObjInf) char.abilita.push(abilitaObjInf);
+  const resInf = addOrIncrementAbility(char, abilitaObjInf);
   await char.save();
 
   await interaction.update({
-    content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedInfAbility}`,
+    content: resInf.added
+      ? `✅ Abilità infernale aggiunta per **${char.name}**: ${resInf.name} (Lv.1)`
+      : resInf.capped
+        ? `⚠️ ${resInf.name} è già al livello massimo (3).`
+        : `✅ ${resInf.name} di **${char.name}** aumentata: Lv.${resInf.before} → Lv.${resInf.after}`,
     components: []
   });
 
@@ -790,13 +839,12 @@ if (interaction.isStringSelectMenu() &&
 }
 
 
-// Definisci una costante globale all'inizio del file
-const TOTAL_STAT_POINTS = 25;
 
 
 
     
-
+// Definisci una costante globale all'inizio del file
+const TOTAL_STAT_POINTS = 25;
 
 /* ======================= SEZIONE ABILITà ======================= */
 if (interaction.isChatInputCommand() && interaction.commandName === "addability") {
