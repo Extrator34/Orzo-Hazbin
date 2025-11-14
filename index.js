@@ -1,6 +1,6 @@
 // index.js
 import http from "http";
-import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags, StringSelectMenuBuilder, ActionRowBuilder } from "discord.js";
+import { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ComponentType } from "discord.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { askRace } from "./askRace.js";
@@ -295,14 +295,24 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Funzione per disabilitare il menù originale
   const disableOriginalMenu = () => {
-    return interaction.message.components.map(row => {
-      const newRow = new ActionRowBuilder();
-      newRow.addComponents(
-        ...row.components.map(c => ComponentBuilder.from(c).setDisabled(true))
-      );
-      return newRow;
-    });
-  };
+  return interaction.message.components.map(row => {
+    const newRow = new ActionRowBuilder();
+    newRow.addComponents(
+      ...row.components.map(c => {
+        // Ricrea il componente come builder e disabilitalo
+        if (c.type === ComponentType.StringSelect) {
+          return StringSelectMenuBuilder.from(c).setDisabled(true);
+        }
+        if (c.type === ComponentType.Button) {
+          return ButtonBuilder.from(c).setDisabled(true);
+        }
+        return c; // fallback
+      })
+    );
+    return newRow;
+  });
+};
+
 
   // Caso speciale: Imp
   if (selectedRace === "imp") {
