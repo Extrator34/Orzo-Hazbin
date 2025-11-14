@@ -285,15 +285,22 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     return;
   }
 
-  // Salva la razza
+  // Salva la razza e abilità base
   char.race = selectedRace;
-
-  // Aggiungi abilità iniziali
   const baseAbilities = raceAbilities[selectedRace] || [];
   if (!Array.isArray(char.abilita)) char.abilita = [];
   char.abilita.push(...baseAbilities);
+  await char.save();
 
-  // Caso speciale: Imp
+  // Disabilita il menù iniziale
+  const disabledMenu = interaction.component.setDisabled(true);
+  const row = new ActionRowBuilder().addComponents(disabledMenu);
+  await interaction.update({
+    content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+    components: [row]
+  });
+
+  // --- Gestione casi speciali ---
   if (selectedRace === "imp") {
     const choiceMenu = new StringSelectMenuBuilder()
       .setCustomId(`select_imp_${interaction.user.id}_${encodeURIComponent(charName)}`)
@@ -304,126 +311,98 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
         { label: "Corpo a Corpo Urbano", value: "corpo_a_corpo" }
       ]);
 
-    const row = new ActionRowBuilder().addComponents(choiceMenu);
+    const rowImp = new ActionRowBuilder().addComponents(choiceMenu);
 
-    await interaction.reply({
-      content: `✅ Razza selezionata: **Imp** per **${char.name}**.\nOra scegli un'abilità aggiuntiva:`,
-      components: [row],
+    await interaction.followUp({
+      content: `Ora scegli un'abilità aggiuntiva per **Imp**:`,
+      components: [rowImp],
       flags: MessageFlags.Ephemeral
     });
-
-    await char.save();
     return;
   }
 
   if (selectedRace === "peccatore") {
-  const choiceMenu1 = new StringSelectMenuBuilder()
-    .setCustomId(`select_peccatore1_${interaction.user.id}_${encodeURIComponent(charName)}`)
-    .setPlaceholder("Scegli la prima abilità da Peccatore")
-    .addOptions(
-      abilitaInfernali.map(a => ({ label: a.nome, value: a.nome }))
-    );
-
-  const row1 = new ActionRowBuilder().addComponents(choiceMenu1);
-
-  await interaction.reply({
-    content: `✅ Razza selezionata: **Peccatore** per **${char.name}**.\nOra scegli la **prima abilità**:`,
-    components: [row1],
-    flags: MessageFlags.Ephemeral
-  });
-
-  await char.save();
-  return;
-}
-
-// Caso speciale: Winner
-if (selectedRace === "winner") {
-  // Prima tendina (prime 25 abilità)
-  const choiceMenu1 = new StringSelectMenuBuilder()
-    .setCustomId(`select_winner1_${interaction.user.id}_${encodeURIComponent(charName)}`)
-    .setPlaceholder("Scegli la prima abilità da Winner (1-25)")
-    .addOptions(
-      abilitaCelestiali.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
-    );
-
-  // Seconda tendina (resto delle abilità, se presenti)
-  const choiceMenu2 = new StringSelectMenuBuilder()
-    .setCustomId(`select_winner1b_${interaction.user.id}_${encodeURIComponent(charName)}`)
-    .setPlaceholder("Scegli la prima abilità da Winner (26+)")
-    .addOptions(
-      abilitaCelestiali.slice(25).map(a => ({ label: a.nome, value: a.nome }))
-    );
-
-  const rows = [new ActionRowBuilder().addComponents(choiceMenu1)];
-  if (abilitaCelestiali.length > 25) {
-    rows.push(new ActionRowBuilder().addComponents(choiceMenu2));
-  }
-
-  await interaction.reply({
-    content: `✅ Razza selezionata: **Winner** per **${char.name}**.\nOra scegli la **prima abilità celestiale**:`,
-    components: rows,
-    flags: MessageFlags.Ephemeral
-  });
-
-  await char.save();
-  return;
-}
-
-// Caso speciale: Angelo Caduto
-if (selectedRace === "angelo_caduto") {
-  // Filtra abilità celestiali escludendo "Volare"
-  const abilitaCelestialiFiltrate = abilitaCelestiali.filter(a => a.nome !== "Volare");
-
-  const choiceMenuCel = new StringSelectMenuBuilder()
-    .setCustomId(`select_caduto1_${interaction.user.id}_${encodeURIComponent(charName)}`)
-    .setPlaceholder("Scegli un'abilità celestiale (no Volare)")
-    .addOptions(
-      abilitaCelestialiFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
-    );
-
-  const rows = [new ActionRowBuilder().addComponents(choiceMenuCel)];
-  if (abilitaCelestialiFiltrate.length > 25) {
-    const choiceMenuCel2 = new StringSelectMenuBuilder()
-      .setCustomId(`select_caduto1b_${interaction.user.id}_${encodeURIComponent(charName)}`)
-      .setPlaceholder("Scegli un'abilità celestiale (extra)")
+    const choiceMenu1 = new StringSelectMenuBuilder()
+      .setCustomId(`select_peccatore1_${interaction.user.id}_${encodeURIComponent(charName)}`)
+      .setPlaceholder("Scegli la prima abilità da Peccatore")
       .addOptions(
-        abilitaCelestialiFiltrate.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+        abilitaInfernali.map(a => ({ label: a.nome, value: a.nome }))
       );
-    rows.push(new ActionRowBuilder().addComponents(choiceMenuCel2));
+
+    const row1 = new ActionRowBuilder().addComponents(choiceMenu1);
+
+    await interaction.followUp({
+      content: `Ora scegli la **prima abilità** da Peccatore:`,
+      components: [row1],
+      flags: MessageFlags.Ephemeral
+    });
+    return;
   }
 
-  await interaction.reply({
-    content: `✅ Razza selezionata: **Angelo Caduto** per **${char.name}**.\nOra scegli la **prima abilità celestiale** (Volare escluso):`,
-    components: rows,
-    flags: MessageFlags.Ephemeral
-  });
+  if (selectedRace === "winner") {
+    const choiceMenu1 = new StringSelectMenuBuilder()
+      .setCustomId(`select_winner1_${interaction.user.id}_${encodeURIComponent(charName)}`)
+      .setPlaceholder("Scegli la prima abilità da Winner (1-25)")
+      .addOptions(
+        abilitaCelestiali.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
+      );
 
-  await char.save();
-  return;
-}
+    const rows = [new ActionRowBuilder().addComponents(choiceMenu1)];
+    if (abilitaCelestiali.length > 25) {
+      const choiceMenu2 = new StringSelectMenuBuilder()
+        .setCustomId(`select_winner1b_${interaction.user.id}_${encodeURIComponent(charName)}`)
+        .setPlaceholder("Scegli la prima abilità da Winner (26+)")
+        .addOptions(
+          abilitaCelestiali.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+        );
+      rows.push(new ActionRowBuilder().addComponents(choiceMenu2));
+    }
 
- await char.save();
+    await interaction.followUp({
+      content: `Ora scegli la **prima abilità celestiale** da Winner:`,
+      components: rows,
+      flags: MessageFlags.Ephemeral
+    });
+    return;
+  }
 
-// Conferma razza scelta
-await interaction.update({
-  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
-  components: [],
-});
+  if (selectedRace === "angelo_caduto") {
+    const abilitaCelestialiFiltrate = abilitaCelestiali.filter(a => a.nome !== "Volare");
 
-// Avvia la distribuzione statistiche
-if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
-  // Avvia stats qui solo per razze normali
+    const choiceMenuCel = new StringSelectMenuBuilder()
+      .setCustomId(`select_caduto1_${interaction.user.id}_${encodeURIComponent(charName)}`)
+      .setPlaceholder("Scegli un'abilità celestiale (no Volare)")
+      .addOptions(
+        abilitaCelestialiFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
+      );
+
+    const rows = [new ActionRowBuilder().addComponents(choiceMenuCel)];
+    if (abilitaCelestialiFiltrate.length > 25) {
+      const choiceMenuCel2 = new StringSelectMenuBuilder()
+        .setCustomId(`select_caduto1b_${interaction.user.id}_${encodeURIComponent(charName)}`)
+        .setPlaceholder("Scegli un'abilità celestiale (extra)")
+        .addOptions(
+          abilitaCelestialiFiltrate.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+        );
+      rows.push(new ActionRowBuilder().addComponents(choiceMenuCel2));
+    }
+
+    await interaction.followUp({
+      content: `Ora scegli la **prima abilità celestiale** (Volare escluso):`,
+      components: rows,
+      flags: MessageFlags.Ephemeral
+    });
+    return;
+  }
+
+  // --- Razze normali → avvia distribuzione statistiche ---
   const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
-  const row = new ActionRowBuilder().addComponents(statMenu);
+  const statRow = new ActionRowBuilder().addComponents(statMenu);
   await interaction.followUp({
     content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-    components: [row],
+    components: [statRow],
     flags: MessageFlags.Ephemeral
   });
-}
-
-return;
-
 }
 
 /* ---------- RAZZA IMP ---------- */
