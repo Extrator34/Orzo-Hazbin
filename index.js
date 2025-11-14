@@ -295,6 +295,11 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Caso speciale: Imp
   if (selectedRace === "imp") {
+    await interaction.message.edit({
+  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+  components: [] // <-- rimuove il menù
+});
+
     const choiceMenu = new StringSelectMenuBuilder()
       .setCustomId(`select_imp_${interaction.user.id}_${encodeURIComponent(charName)}`)
       .setPlaceholder("Scegli un'abilità iniziale per Imp")
@@ -317,6 +322,11 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   }
 
   if (selectedRace === "peccatore") {
+    await interaction.message.edit({
+  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+  components: [] // <-- rimuove il menù
+});
+
   const choiceMenu1 = new StringSelectMenuBuilder()
     .setCustomId(`select_peccatore1_${interaction.user.id}_${encodeURIComponent(charName)}`)
     .setPlaceholder("Scegli la prima abilità da Peccatore")
@@ -338,6 +348,11 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
 // Caso speciale: Winner
 if (selectedRace === "winner") {
+  await interaction.message.edit({
+  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+  components: [] // <-- rimuove il menù
+});
+
   // Prima tendina (prime 25 abilità)
   const choiceMenu1 = new StringSelectMenuBuilder()
     .setCustomId(`select_winner1_${interaction.user.id}_${encodeURIComponent(charName)}`)
@@ -371,6 +386,11 @@ if (selectedRace === "winner") {
 
 // Caso speciale: Angelo Caduto
 if (selectedRace === "angelo_caduto") {
+  await interaction.message.edit({
+  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+  components: [] // <-- rimuove il menù
+});
+
   // Filtra abilità celestiali escludendo "Volare"
   const abilitaCelestialiFiltrate = abilitaCelestiali.filter(a => a.nome !== "Volare");
 
@@ -416,10 +436,6 @@ if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
     flags: MessageFlags.Ephemeral
   });
 }
-  
-
-// Elimina il messaggio originale della select
-await interaction.message.delete().catch(() => {});
 
 return;
 
