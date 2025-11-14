@@ -404,11 +404,6 @@ if (selectedRace === "angelo_caduto") {
 
  await char.save();
 
-// Conferma razza scelta
-await interaction.update({
-  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
-  components: [],
-});
 
 // Avvia la distribuzione statistiche
 if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
@@ -421,6 +416,13 @@ if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
     flags: MessageFlags.Ephemeral
   });
 }
+
+  // Sparisce il menù iniziale
+await interaction.update({
+  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+  components: [] // <-- rimuove il menù
+});
+
 
 return;
 
