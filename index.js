@@ -111,6 +111,29 @@ const expTable = [
 ];
 const maxExp = 5049000;
 
+
+/* ======================= FUNZIONE CHECK LVL MAX ABILITà ======================= */
+function addOrIncrementAbility(char, abilitaObj) {
+  if (!abilitaObj) return { ok: false, added: false, leveledUp: false, capped: false, name: "?" };
+
+  const existing = char.abilita.find(a => a.nome === abilitaObj.nome);
+
+  if (existing) {
+    const before = existing.livello ?? 1;
+    const after = Math.min(before + 1, 3);
+    existing.livello = after;
+    return { ok: true, name: existing.nome, added: false, leveledUp: before < after, before, after, capped: after === 3 };
+  } else {
+    char.abilita.push({
+      nome: abilitaObj.nome,
+      descrizione: abilitaObj.descrizione || "",
+      livello: 1
+    });
+    return { ok: true, name: abilitaObj.nome, added: true, leveledUp: false, before: 0, after: 1, capped: false };
+  }
+}
+
+
 /* ======================= DISCORD CLIENT ======================= */
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
