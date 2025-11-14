@@ -424,7 +424,10 @@ if (selectedRace === "angelo_caduto") {
 
  await char.save();
 
-
+await interaction.update({
+  content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.`,
+  components: [] // rimuove il menù
+});
 // Avvia la distribuzione statistiche
 if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
   // Avvia stats qui solo per razze normali
