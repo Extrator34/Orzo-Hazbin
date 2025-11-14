@@ -293,14 +293,22 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   if (!Array.isArray(char.abilita)) char.abilita = [];
   char.abilita.push(...baseAbilities);
 
+  // Funzione per disabilitare il menù originale
+  const disableOriginalMenu = () => {
+    return interaction.message.components.map(row => {
+      const newRow = new ActionRowBuilder();
+      newRow.addComponents(
+        ...row.components.map(c => ComponentBuilder.from(c).setDisabled(true))
+      );
+      return newRow;
+    });
+  };
+
   // Caso speciale: Imp
   if (selectedRace === "imp") {
-    const disabledMenu = interaction.component.setDisabled(true);
-    const rowDisabled = new ActionRowBuilder().addComponents(disabledMenu);
-
     await interaction.update({
       content: `✅ Razza selezionata: **IMP** per **${char.name}**.`,
-      components: [rowDisabled]
+      components: disableOriginalMenu()
     });
 
     const choiceMenu = new StringSelectMenuBuilder()
@@ -326,12 +334,9 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Caso speciale: Peccatore
   if (selectedRace === "peccatore") {
-    const disabledMenu = interaction.component.setDisabled(true);
-    const rowDisabled = new ActionRowBuilder().addComponents(disabledMenu);
-
     await interaction.update({
       content: `✅ Razza selezionata: **PECCATORE** per **${char.name}**.`,
-      components: [rowDisabled]
+      components: disableOriginalMenu()
     });
 
     const choiceMenu1 = new StringSelectMenuBuilder()
@@ -355,12 +360,9 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Caso speciale: Winner
   if (selectedRace === "winner") {
-    const disabledMenu = interaction.component.setDisabled(true);
-    const rowDisabled = new ActionRowBuilder().addComponents(disabledMenu);
-
     await interaction.update({
       content: `✅ Razza selezionata: **WINNER** per **${char.name}**.`,
-      components: [rowDisabled]
+      components: disableOriginalMenu()
     });
 
     const choiceMenu1 = new StringSelectMenuBuilder()
@@ -394,12 +396,9 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Caso speciale: Angelo Caduto
   if (selectedRace === "angelo_caduto") {
-    const disabledMenu = interaction.component.setDisabled(true);
-    const rowDisabled = new ActionRowBuilder().addComponents(disabledMenu);
-
     await interaction.update({
       content: `✅ Razza selezionata: **ANGELO CADUTO** per **${char.name}**.`,
-      components: [rowDisabled]
+      components: disableOriginalMenu()
     });
 
     const abilitaCelestialiFiltrate = abilitaCelestiali.filter(a => a.nome !== "Volare");
@@ -437,7 +436,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   await interaction.update({
     content: `✅ Razza selezionata: **${selectedRace.replace(/_/g, " ")}** per **${char.name}**.\nAbilità iniziali assegnate.`,
-    components: []
+    components: disableOriginalMenu()
   });
 
   if (!["imp", "peccatore", "winner", "angelo_caduto"].includes(selectedRace)) {
