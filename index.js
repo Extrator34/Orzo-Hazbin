@@ -295,24 +295,22 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Funzione per disabilitare il menù originale
   const disableOriginalMenu = () => {
-  return interaction.message.components.map(row => {
-    const newRow = new ActionRowBuilder();
-    newRow.addComponents(
-      ...row.components.map(c => {
-        // Ricrea il componente come builder e disabilitalo
-        if (c.type === ComponentType.StringSelect) {
-          return StringSelectMenuBuilder.from(c).setDisabled(true);
-        }
-        if (c.type === ComponentType.Button) {
-          return ButtonBuilder.from(c).setDisabled(true);
-        }
-        return c; // fallback
-      })
-    );
-    return newRow;
-  });
-};
-
+    return interaction.message.components.map(row => {
+      const newRow = new ActionRowBuilder();
+      newRow.addComponents(
+        ...row.components.map(c => {
+          if (c.type === ComponentType.StringSelect) {
+            return StringSelectMenuBuilder.from(c).setDisabled(true);
+          }
+          if (c.type === ComponentType.Button) {
+            return ButtonBuilder.from(c).setDisabled(true);
+          }
+          return c;
+        })
+      );
+      return newRow;
+    });
+  };
 
   // Caso speciale: Imp
   if (selectedRace === "imp") {
@@ -462,6 +460,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   return;
 }
+
 
 
 /* ---------- RAZZA IMP ---------- */
