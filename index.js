@@ -506,9 +506,7 @@ await interaction.followUp({
 }
 
 
-    /* ---------- RAZZA PECCATORI ---------- */
-
-
+   /* ---------- RAZZA PECCATORI ---------- */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_peccatore1")) {
   const parts = interaction.customId.split("_");
   const userId = parts[2];
@@ -524,25 +522,35 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Salva la prima abilità
   const abilitaObj1 = abilitaInfernali.find(a => a.nome === selectedAbility1);
-  if (abilitaObj1) char.abilita.push(abilitaObj1);
+  const res1 = addOrIncrementAbility(char, abilitaObj1);
   await char.save();
 
-  // Filtra la lista escludendo la prima abilità scelta
-
+  // Menù filtrato: esclude abilità già al livello 3
   const choiceMenu2 = new StringSelectMenuBuilder()
     .setCustomId(`select_peccatore2_${interaction.user.id}_${encodeURIComponent(charName)}`)
     .setPlaceholder("Scegli la seconda abilità da Peccatore")
     .addOptions(
-      abilitaInfernali.map(a => ({ label: a.nome, value: a.nome }))
+      abilitaInfernali
+        .filter(a => {
+          const existing = char.abilita.find(ab => ab.nome === a.nome);
+          return !existing || existing.livello < 3;
+        })
+        .map(a => ({ label: a.nome, value: a.nome }))
     );
 
   const row2 = new ActionRowBuilder().addComponents(choiceMenu2);
 
   await interaction.update({
-    content: `✅ Prima abilità selezionata: **${selectedAbility1}**.\nOra scegli la **seconda abilità**:`,
+    content: res1.added
+      ? `✅ Prima abilità: **${res1.name}** (Lv.1). Ora scegli la seconda abilità:`
+      : res1.capped
+        ? `⚠️ **${res1.name}** è già al livello massimo (3). Ora scegli la seconda abilità:`
+        : `✅ **${res1.name}** aumentata: Lv.${res1.before} → Lv.${res1.after}. Ora scegli la seconda abilità:`,
     components: [row2]
   });
 }
+
+
 
     if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_peccatore2")) {
   const parts = interaction.customId.split("_");
@@ -559,24 +567,29 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 
   // Salva la seconda abilità
   const abilitaObj2 = abilitaInfernali.find(a => a.nome === selectedAbility2);
-  if (abilitaObj2) char.abilita.push(abilitaObj2);
+  const res2 = addOrIncrementAbility(char, abilitaObj2);
   await char.save();
 
   await interaction.update({
-    content: `✅ Abilità selezionate per **${char.name}**:\n1. ${char.abilita[0].nome}\n2. ${selectedAbility2}`,
+    content: res2.added
+      ? `✅ Abilità aggiunta per **${char.name}**: ${res2.name} (Lv.1)`
+      : res2.capped
+        ? `⚠️ ${res2.name} è già al livello massimo (3).`
+        : `✅ ${res2.name} di **${char.name}** aumentata: Lv.${res2.before} → Lv.${res2.after}`,
     components: []
   });
-      // Avvia la distribuzione statistiche
-const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
-const row = new ActionRowBuilder().addComponents(statMenu);
 
-await interaction.followUp({
-  content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
-  components: [row],
-  flags: MessageFlags.Ephemeral
-});
+  // Avvia la distribuzione statistiche
+  const statMenu = buildStatMenu("forza", interaction.user.id, charName, 25, 5);
+  const row = new ActionRowBuilder().addComponents(statMenu);
 
+  await interaction.followUp({
+    content: `📊 Ora distribuisci le statistiche per **${char.name}**.\nInizia con **Forza**:`,
+    components: [row],
+    flags: MessageFlags.Ephemeral
+  });
 }
+
 
       /* ---------- RAZZA WINNER ---------- */
     
