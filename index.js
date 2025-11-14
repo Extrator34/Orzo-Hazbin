@@ -528,13 +528,12 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   await char.save();
 
   // Filtra la lista escludendo la prima abilità scelta
-  const abilitaFiltrate = abilitaInfernali.filter(a => a.nome !== selectedAbility1);
 
   const choiceMenu2 = new StringSelectMenuBuilder()
     .setCustomId(`select_peccatore2_${interaction.user.id}_${encodeURIComponent(charName)}`)
     .setPlaceholder("Scegli la seconda abilità da Peccatore")
     .addOptions(
-      abilitaFiltrate.map(a => ({ label: a.nome, value: a.nome }))
+      abilitaInfernali.map(a => ({ label: a.nome, value: a.nome }))
     );
 
   const row2 = new ActionRowBuilder().addComponents(choiceMenu2);
@@ -602,22 +601,22 @@ if (interaction.isStringSelectMenu() &&
   await char.save();
 
   // Filtra la lista escludendo la prima scelta
-  const abilitaFiltrate = abilitaCelestiali.filter(a => a.nome !== selectedAbility1);
+ 
 
   const choiceMenu2 = new StringSelectMenuBuilder()
     .setCustomId(`select_winner2_${interaction.user.id}_${encodeURIComponent(charName)}`)
     .setPlaceholder("Scegli la seconda abilità da Winner")
     .addOptions(
-      abilitaFiltrate.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
+      abilitaCelestiali.slice(0, 25).map(a => ({ label: a.nome, value: a.nome }))
     );
 
   const rows = [new ActionRowBuilder().addComponents(choiceMenu2)];
-  if (abilitaFiltrate.length > 25) {
+  if (abilitaCelestiali.length > 25) {
     const choiceMenu2b = new StringSelectMenuBuilder()
       .setCustomId(`select_winner2b_${interaction.user.id}_${encodeURIComponent(charName)}`)
       .setPlaceholder("Scegli la seconda abilità da Winner (26+)")
       .addOptions(
-        abilitaFiltrate.slice(25).map(a => ({ label: a.nome, value: a.nome }))
+        abilitaCelestiali.slice(25).map(a => ({ label: a.nome, value: a.nome }))
       );
     rows.push(new ActionRowBuilder().addComponents(choiceMenu2b));
   }
