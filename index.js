@@ -1027,7 +1027,7 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 }
 
 
-    if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_carisma")) {
+  if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_stat_carisma")) {
   const parts = interaction.customId.split("_");
   const userId = parts[3];
   const charName = decodeURIComponent(parts.slice(4).join("_"));
@@ -1053,36 +1053,22 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
     components: []
   });
 
-  // --- Subito dopo: abilità extra ---
-  const poolInferno = abilitaInfernali.filter(a =>
-    !["Armi da Fuoco Leggere", "Armi Pesanti", "Corpo a Corpo Urbano"].includes(a.nome)
-  );
-  const poolCelestiale = abilitaCelestiali.filter(a => a.nome !== "Volare");
-
   const rows = [];
 
-  if (["peccatore", "hellhound", "succube", "imp", "bafometto", "infestatore"].includes(char.race)) {
-    // Solo infernali
-    const abilitaDisponibili = poolInferno.filter(a => {
-      const existing = char.abilita.find(x => x.nome === a.nome);
-      return !(existing && existing.livello >= 3);
-    });
-    for (let i = 0; i < abilitaDisponibili.length; i += 25) {
-      const chunk = abilitaDisponibili.slice(i, i + 25);
+  if (["peccatore","hellhound","succube","imp","bafometto","infestatore"].includes(char.race)) {
+    // Solo infernali, nessun filtro
+    for (let i = 0; i < abilitaInfernali.length; i += 25) {
+      const chunk = abilitaInfernali.slice(i, i + 25);
       const menu = new StringSelectMenuBuilder()
         .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_1_inferno_${i}`)
         .setPlaceholder("😈 Abilità infernali (extra 1/3)")
         .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
       rows.push(new ActionRowBuilder().addComponents(menu));
     }
-  } else if (["winner", "cherubino"].includes(char.race)) {
-    // Solo celestiali
-    const abilitaDisponibili = poolCelestiale.filter(a => {
-      const existing = char.abilita.find(x => x.nome === a.nome);
-      return !(existing && existing.livello >= 3);
-    });
-    for (let i = 0; i < abilitaDisponibili.length; i += 25) {
-      const chunk = abilitaDisponibili.slice(i, i + 25);
+  } else if (["winner","cherubino"].includes(char.race)) {
+    // Solo celestiali, nessun filtro
+    for (let i = 0; i < abilitaCelestiali.length; i += 25) {
+      const chunk = abilitaCelestiali.slice(i, i + 25);
       const menu = new StringSelectMenuBuilder()
         .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_1_celestiale_${i}`)
         .setPlaceholder("✨ Abilità celestiali (extra 1/3)")
@@ -1090,11 +1076,11 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
       rows.push(new ActionRowBuilder().addComponents(menu));
     }
   } else if (char.race === "angelo_caduto") {
-    // Infernali separati
-    const infernaliDisponibili = poolInferno.filter(a => {
-      const existing = char.abilita.find(x => x.nome === a.nome);
-      return !(existing && existing.livello >= 3);
-    });
+    // Infernali filtrati
+    const infernaliDisponibili = abilitaInfernali.filter(a =>
+      !["Armi da Fuoco Leggere","Armi Pesanti","Corpo a Corpo Urbano"].includes(a.nome) &&
+      !(char.abilita.find(x => x.nome === a.nome && x.livello >= 3))
+    );
     for (let i = 0; i < infernaliDisponibili.length; i += 25) {
       const chunk = infernaliDisponibili.slice(i, i + 25);
       const menu = new StringSelectMenuBuilder()
@@ -1104,11 +1090,11 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
       rows.push(new ActionRowBuilder().addComponents(menu));
     }
 
-    // Celestiali separati
-    const celestialiDisponibili = poolCelestiale.filter(a => {
-      const existing = char.abilita.find(x => x.nome === a.nome);
-      return !(existing && existing.livello >= 3);
-    });
+    // Celestiali filtrati
+    const celestialiDisponibili = abilitaCelestiali.filter(a =>
+      a.nome !== "Volare" &&
+      !(char.abilita.find(x => x.nome === a.nome && x.livello >= 3))
+    );
     for (let i = 0; i < celestialiDisponibili.length; i += 25) {
       const chunk = celestialiDisponibili.slice(i, i + 25);
       const menu = new StringSelectMenuBuilder()
@@ -1127,9 +1113,8 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
 }
 
 
-  /*========================= ABILITA EXTRA ================================*/
-    
-if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_extra_ability")) {
+
+  if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_extra_ability")) {
   const parts = interaction.customId.split("_");
   const userId = parts[3];
   const charName = decodeURIComponent(parts[4]);
@@ -1140,14 +1125,25 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   const char = await Character.findOne({ userId, name: charName });
   if (!char) return;
 
-  // Liste base con filtri (vietate)
-  const poolInfernoBase = abilitaInfernali.filter(a =>
-    !["Armi da Fuoco Leggere","Armi Pesanti","Corpo a Corpo Urbano"].includes(a.nome)
-  );
-  const poolCelestialeBase = abilitaCelestiali.filter(a => a.nome !== "Volare");
+  // Liste base
+  const poolInfernoBase = abilitaInfernali;
+  const poolCelestialeBase = abilitaCelestiali;
 
-  // Determina la pool di salvataggio in base al 'tipo' del menù cliccato
-  let pool = tipo === "inferno" ? poolInfernoBase : poolCelestialeBase;
+  // Determina la pool in base alla razza e al tipo
+  let pool = [];
+  if (["peccatore","hellhound","succube","imp","bafometto","infestatore"].includes(char.race)) {
+    pool = poolInfernoBase;
+  } else if (["winner","cherubino"].includes(char.race)) {
+    pool = poolCelestialeBase;
+  } else if (char.race === "angelo_caduto") {
+    if (tipo === "inferno") {
+      pool = poolInfernoBase.filter(a =>
+        !["Armi da Fuoco Leggere","Armi Pesanti","Corpo a Corpo Urbano"].includes(a.nome)
+      );
+    } else if (tipo === "celestiale") {
+      pool = poolCelestialeBase.filter(a => a.nome !== "Volare");
+    }
+  }
 
   // Salvataggio/incremento livello (max 3)
   const abilitaObj = pool.find(a => a.nome === selectedAbility);
@@ -1162,46 +1158,71 @@ if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_
   }
 
   if (step < 3) {
-    // Ricostruisci SEMPRE entrambi i gruppi per lo step successivo
-    const infernaliDisponibili = poolInfernoBase.filter(a => {
-      const existing = char.abilita.find(x => x.nome === a.nome);
-      return !(existing && existing.livello >= 3);
-    });
-    const celestialiDisponibili = poolCelestialeBase.filter(a => {
-      const existing = char.abilita.find(x => x.nome === a.nome);
-      return !(existing && existing.livello >= 3);
-    });
-
     const nextRows = [];
 
-    // Menù infernali (step+1)
-    for (let i = 0; i < infernaliDisponibili.length; i += 25) {
-      const chunk = infernaliDisponibili.slice(i, i + 25);
-      const menu = new StringSelectMenuBuilder()
-        .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}_inferno_${i}`)
-        .setPlaceholder(`😈 Abilità infernali (extra ${step+1}/3)`)
-        .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
-      nextRows.push(new ActionRowBuilder().addComponents(menu));
+    if (["peccatore","hellhound","succube","imp","bafometto","infestatore"].includes(char.race)) {
+      // Infernal races → solo infernali, max lvl 3
+      const infernaliDisponibili = poolInfernoBase.filter(a => {
+        const existing = char.abilita.find(x => x.nome === a.nome);
+        return !(existing && existing.livello >= 3);
+      });
+      for (let i = 0; i < infernaliDisponibili.length; i += 25) {
+        const chunk = infernaliDisponibili.slice(i, i + 25);
+        const menu = new StringSelectMenuBuilder()
+          .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}_inferno_${i}`)
+          .setPlaceholder(`😈 Abilità infernali (extra ${step+1}/3)`)
+          .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+        nextRows.push(new ActionRowBuilder().addComponents(menu));
+      }
+    } else if (["winner","cherubino"].includes(char.race)) {
+      // Celestial races → solo celestiali, max lvl 3
+      const celestialiDisponibili = poolCelestialeBase.filter(a => {
+        const existing = char.abilita.find(x => x.nome === a.nome);
+        return !(existing && existing.livello >= 3);
+      });
+      for (let i = 0; i < celestialiDisponibili.length; i += 25) {
+        const chunk = celestialiDisponibili.slice(i, i + 25);
+        const menu = new StringSelectMenuBuilder()
+          .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}_celestiale_${i}`)
+          .setPlaceholder(`✨ Abilità celestiali (extra ${step+1}/3)`)
+          .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+        nextRows.push(new ActionRowBuilder().addComponents(menu));
+      }
+    } else if (char.race === "angelo_caduto") {
+      // Fallen angels → entrambe, con filtri + max lvl 3
+      const infernaliDisponibili = poolInfernoBase.filter(a =>
+        !["Armi da Fuoco Leggere","Armi Pesanti","Corpo a Corpo Urbano"].includes(a.nome) &&
+        !(char.abilita.find(x => x.nome === a.nome && x.livello >= 3))
+      );
+      for (let i = 0; i < infernaliDisponibili.length; i += 25) {
+        const chunk = infernaliDisponibili.slice(i, i + 25);
+        const menu = new StringSelectMenuBuilder()
+          .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}_inferno_${i}`)
+          .setPlaceholder(`😈 Abilità infernali (extra ${step+1}/3)`)
+          .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+        nextRows.push(new ActionRowBuilder().addComponents(menu));
+      }
+
+      const celestialiDisponibili = poolCelestialeBase.filter(a =>
+        a.nome !== "Volare" &&
+        !(char.abilita.find(x => x.nome === a.nome && x.livello >= 3))
+      );
+      for (let i = 0; i < celestialiDisponibili.length; i += 25) {
+        const chunk = celestialiDisponibili.slice(i, i + 25);
+        const menu = new StringSelectMenuBuilder()
+          .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}_celestiale_${i}`)
+          .setPlaceholder(`✨ Abilità celestiali (extra ${step+1}/3)`)
+          .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
+        nextRows.push(new ActionRowBuilder().addComponents(menu));
+      }
     }
 
-    // Menù celestiali (step+1)
-    for (let i = 0; i < celestialiDisponibili.length; i += 25) {
-      const chunk = celestialiDisponibili.slice(i, i + 25);
-      const menu = new StringSelectMenuBuilder()
-        .setCustomId(`select_extra_ability_${interaction.user.id}_${encodeURIComponent(char.name)}_${step+1}_celestiale_${i}`)
-        .setPlaceholder(`✨ Abilità celestiali (extra ${step+1}/3)`)
-        .addOptions(chunk.map(a => ({ label: a.nome, value: a.nome })));
-      nextRows.push(new ActionRowBuilder().addComponents(menu));
-    }
-
-    // Nota: interaction.update deve ripubblicare TUTTI i componenti (entrambi i gruppi)
     await interaction.update({
       content: `✅ Abilità ${step} selezionata: **${selectedAbility}**.\nOra scegli la ${step+1}ª abilità:`,
       components: nextRows
     });
   } else {
     // Fine: riepilogo
-    // Mostra ultime 3 scelte (se preferisci puoi mostrare tutte)
     const lastThree = char.abilita.slice(-3).map((a,i)=>`${i+1}. ${a.nome} (Lv.${a.livello})`).join("\n");
     await interaction.update({
       content: `✅ Abilità extra selezionate per **${char.name}**:\n${lastThree}`,
