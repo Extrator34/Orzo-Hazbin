@@ -6,8 +6,6 @@ import dotenv from "dotenv";
 import { askRace } from "./askRace.js";
 import { abilitaInfernali, abilitaCelestiali } from "./abilities.js";
 import { raceAbilities } from "./raceAbilities.js";
-import { dmCommands } from "./dmCommands.js";
-commands.push(...dmCommands.map(c => c.data.toJSON()));
 
 
 dotenv.config();
@@ -268,6 +266,10 @@ const commands = [
   ]
 }
 ];
+
+
+import { dmCommands } from "./dmCommands.js";
+commands.push(...dmCommands.map(c => c.data.toJSON()));
 
 /* ======================= REGISTRAZIONE COMANDI ======================= */
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
