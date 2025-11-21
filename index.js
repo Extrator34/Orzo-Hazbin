@@ -6,6 +6,9 @@ import dotenv from "dotenv";
 import { askRace } from "./askRace.js";
 import { abilitaInfernali, abilitaCelestiali } from "./abilities.js";
 import { raceAbilities } from "./raceAbilities.js";
+import { dmCommands } from "./dmCommands.js";
+commands.push(...dmCommands.map(c => c.data.toJSON()));
+
 
 dotenv.config();
 
@@ -288,6 +291,17 @@ client.once(Events.ClientReady, () => {
 
 client.on("interactionCreate", async (interaction) => {
   try {
+
+/*=================== IMPORTA COMANDI DM  =======================*/
+    
+    if (interaction.isChatInputCommand()) {
+  const dmCommand = dmCommands.find(c => c.data.name === interaction.commandName);
+  if (dmCommand) {
+    await dmCommand.execute(interaction);
+    return;
+  }
+}
+
 
 /* ---------- SELEZIONE RAZZA ---------- */
 if (interaction.isStringSelectMenu() && interaction.customId.startsWith("select_race")) {
