@@ -10,6 +10,7 @@ import { raceAbilities } from "./raceAbilities.js";
 
 dotenv.config();
 
+
 /* ======================= FUNZIONE EMBED ======================= */
 function createEmbed({ title, description, color = 0x0099ff }) {
   return { embeds: [{ title, description, color }] };
@@ -34,10 +35,18 @@ function buildStatMenu(statName, userId, charName, remainingPoints, statsLeft) {
 const PORT = process.env.PORT || 10000;
 const server = http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("Bot Discord attivo ✅");
+  res.end(JSON.stringify({ status: "ok", message: "Bot Discord attivo ✅" }));
 });
 server.listen(PORT, () => {
   console.log(`🌐 Server web fittizio in ascolto su porta ${PORT}`);
+});
+
+/* ======================= GESTIONE ERRORI GLOBALI ======================= */
+process.on("uncaughtException", err => {
+  console.error("❌ Errore non catturato:", err);
+});
+process.on("unhandledRejection", reason => {
+  console.error("❌ Promessa rifiutata non gestita:", reason);
 });
 
 /* ======================= DEBUG ENV ======================= */
@@ -52,13 +61,16 @@ if (!process.env.MONGO_URI) {
 }
 
 /* ======================= MONGODB ======================= */
-try {
-  await mongoose.connect(process.env.MONGO_URI);
-  console.log("✅ Connesso a MongoDB");
-} catch (err) {
-  console.error("❌ Errore connessione Mongo:", err);
-  process.exit(1);
+async function connectMongo() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ Connesso a MongoDB");
+  } catch (err) {
+    console.error("❌ Errore connessione Mongo:", err);
+    setTimeout(connectMongo, 5000); // riprova dopo 5 secondi
+  }
 }
+connectMongo();
 
 /* ======================= SCHEMA E MODEL ======================= */
 const characterSchema = new mongoose.Schema({
@@ -294,6 +306,16 @@ client.once(Events.ClientReady, () => {
 client.on("interactionCreate", async (interaction) => {
   try {
 
+
+    /* ======================= LOG EVENTI DI DISCONNESSIONE ======================= */
+client.on("shardDisconnect", (event, shardID) => {
+  console.warn(`⚠️ Shard ${shardID} disconnesso:`, event);
+});
+client.on("shardReconnecting", shardID => {
+  console.log(`🔄 Shard ${shardID} in reconnessione...`);
+});
+
+    
 /*=================== IMPORTA COMANDI DM  =======================*/
     
     if (interaction.isChatInputCommand()) {
